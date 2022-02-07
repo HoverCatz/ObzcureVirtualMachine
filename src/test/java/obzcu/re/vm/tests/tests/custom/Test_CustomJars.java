@@ -81,14 +81,15 @@ public class Test_CustomJars
         assertDoesNotThrow(() -> Files.copy(finalTempFile1.toPath(), new File("src/test/java/obzcu/re/vm/tests/tests/jarfiles/testjar-after.jar").toPath(), StandardCopyOption.REPLACE_EXISTING));
 
         ObzcureVM.Duo<String, String> output2 = assertDoesNotThrow(() -> executeJar(finalTempFile1));
+        ObzcureVM.Duo<String, String> duo = fixVMExceptions(output.b, output2.b);
         print("Output", output2.a);
         System.out.println();
         error("Error (vm errors)", output2.b);
-        output2.b = fixVMExceptions(output.b, output2.b);
+        output2.b = duo.b;
         error("Error (fixed)", output2.b);
         System.out.println();
 
-        assertEquals(output.b, output2.b); // Test errors first
+        assertEquals(duo.a, output2.b); // Test errors first
         assertEquals(output.a, output2.a); // Then test output
     }
 

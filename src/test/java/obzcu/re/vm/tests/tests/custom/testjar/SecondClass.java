@@ -13,6 +13,17 @@ public abstract class SecondClass
         System.out.println("Hello world from SecondClass");
     }
 
+    public SecondClass(int i)
+    {
+        this();
+    }
+
+    public SecondClass(int i, double v)
+    {
+        this(i);
+        System.out.println("Hello world from SecondClass(I, D)");
+    }
+
     public void testThrow() throws Throwable
     {
         int a = 0;

@@ -19,6 +19,7 @@ public class SecondClass extends AbsClass
     public SecondClass(Test test, int i, double v)
     {
         super(test, i, v);
+        System.out.println("Hello world from SecondClass(Test, I, D)");
     }
 
     public char testBoolean()

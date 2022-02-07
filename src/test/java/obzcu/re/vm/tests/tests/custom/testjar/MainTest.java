@@ -14,13 +14,15 @@ public class MainTest
 
     private MainTest()
     {
+        super();
+
         doit();
     }
 
     private void doit()
     {
         System.out.println("Hello world from testjar's MainTest!");
-        SecondClass secondClass = new SecondClass()
+        SecondClass secondClass = new SecondClass(1, 2D)
         {
             @Override
             public void testAbstract() throws Throwable

@@ -56,7 +56,7 @@ public class Translator implements Opcodes
 
     public static final String lookupName = "lookup$obzcure";
 
-    public boolean debug = false;
+    public boolean debug = true;
     private final boolean debugPrettyPrint = false;
     private final boolean doStackAnalyze = false;
 
@@ -181,9 +181,11 @@ public class Translator implements Opcodes
                     }
                 }
                 else
-                if (!(insn instanceof LabelNode))
+                if (insn instanceof LabelNode || insn instanceof LineNumberNode)
+                    ; // Continue
+                else
                 {
-                    if (debug) System.out.println("VMIgnore (constructor nonLabel found)");
+                    if (debug) System.out.println("VMIgnore (constructor nonLabel/nonLine found)");
                     writer.writeUTF("VMIgnore");
                     continue;
                 }

@@ -46,6 +46,7 @@ public class Obzcure
             boolean renameVMClasses = false;
             boolean skipDebug = false;
             boolean rndMeow = false;
+            boolean force = false;
 
             boolean localDevTesting = false;
             if (localDevTesting)
@@ -59,6 +60,7 @@ public class Obzcure
 
                 rndMeow = true;
                 removeFinal = true;
+                force = true;
             }
             else
             {
@@ -74,6 +76,7 @@ public class Obzcure
 //                    options.addOption(new Option("r", "renaming", false, "Rename all VM classes/fields/methods"));
                     options.addOption(new Option("sd", "skipDebug", false, "Remove debugging information from all classes"));
                     options.addOption(new Option("rm", "rndMeow", false, "Random cats.meow filename"));
+                    options.addOption(new Option("f", "force", false, "Force overwrite output file (if it exists)"));
 
                     CommandLineParser parser = new DefaultParser();
                     cmd = parser.parse(options, args);
@@ -100,17 +103,21 @@ public class Obzcure
 //                renameVMClasses = cmd.hasOption("r");
                 skipDebug = cmd.hasOption("sd");
                 rndMeow = cmd.hasOption("rm");
+                force = cmd.hasOption("f");
             }
 
             if (outputFile.exists())
             {
-                System.out.println("Output file already exist. Do you want to overwrite? [Y/n]");
-                Scanner sc = new Scanner(System.in);
-                String s = sc.nextLine();
-                if (s == null)
-                    return;
-                if (!s.isEmpty() && (s.equalsIgnoreCase("n") || s.equalsIgnoreCase("no")))
-                    return;
+                if (!force)
+                {
+                    System.out.println("Output file already exist. Do you want to overwrite? [Y/n]");
+                    Scanner sc = new Scanner(System.in);
+                    String s = sc.nextLine();
+                    if (s == null)
+                        return;
+                    if (!s.isEmpty() && (s.equalsIgnoreCase("n") || s.equalsIgnoreCase("no")))
+                        return;
+                }
                 if (!outputFile.delete())
                     throw new Throwable("Couldn't delete existing output file. Used by another process maybe?");
             }

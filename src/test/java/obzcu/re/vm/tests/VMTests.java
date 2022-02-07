@@ -19,7 +19,6 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.jar.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -435,8 +434,9 @@ public class VMTests
         }
     }
 
-    public static String fixVMExceptions(String in, String out)
+    public static ObzcureVM.Duo<String, String> fixVMExceptions(String in, String out)
     {
+        List<String> inList = new ArrayList<>();
         List<String> outList = new ArrayList<>();
         String[] inSplit = in.split("\n");
         String[] outSplit = out.split("\n");
@@ -445,12 +445,18 @@ public class VMTests
             if (outLine.startsWith("\tat obzcu.re.virtualmachine.")) continue;
             // TODO: Do we need to remove '    at java.base/' from inSplit too?
             if (outLine.startsWith("\tat java.base/")) continue;
+            if (outLine.contains("<init>")) outLine = removeLineNumber(outLine);
             outList.add(outLine);
         }
-        assertEquals(inSplit.length, outList.size());
-        for (int i = 0; i < inSplit.length; i++)
+        for (String inLine : inSplit)
         {
-            String inLine = inSplit[i];
+            if (inLine.contains("<init>")) inLine = removeLineNumber(inLine);
+            inList.add(inLine);
+        }
+        assertEquals(inList.size(), outList.size());
+        for (int i = 0; i < inList.size(); i++)
+        {
+            String inLine = inList.get(i);
             int index = inLine.lastIndexOf(':'); // Does the original output even have a linenumber?
             if (index == -1) continue; // Nope, so ignore
 
@@ -462,7 +468,15 @@ public class VMTests
             String sub = outLine.substring(0, index2); // Insert missing line-number from the original output
             outList.set(i, sub + ":" + inLine.substring(index + 1, inLine.lastIndexOf(')')) + ")");
         }
-        return String.join("\n", outList);
+        return new ObzcureVM.Duo<>(String.join("\n", inList), String.join("\n", outList));
+    }
+
+    private static String removeLineNumber(String str)
+    {
+        int index = str.lastIndexOf(':');
+        if (index == -1) return str;
+        //    at obzcu.re.vm.tests.tests.custom.testjar.MainTest.<init>(MainTest.java:19)
+        return str.substring(0, index) + ")";
     }
 
     public static void print(String title, String message)
