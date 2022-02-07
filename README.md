@@ -1,7 +1,9 @@
 # Obzcure Virtual Machine
 ## Java virtual machine made in Java
 
-###### Requires Java 17 (with preview features)
+# THIS IS NOT PRODUCTION SAFE - WORK IN PROGRESS!  
+- *Use at your own risk.*
+- Requires Java 17 (with preview features)
 
 `java --enable-preview  -jar ObzcureVM.jar`  
 `"path/to/java17" --enable-preview  -jar ObzcureVM.jar -i in.jar -o out.jar -fp -rf -rm -sd`  
