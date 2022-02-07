@@ -56,7 +56,7 @@ public class Translator implements Opcodes
 
     public static final String lookupName = "lookup$obzcure";
 
-    public boolean debug = true;
+    public boolean debug = false;
     private final boolean debugPrettyPrint = false;
     private final boolean doStackAnalyze = false;
 
