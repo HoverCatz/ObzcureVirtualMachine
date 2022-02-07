@@ -131,7 +131,7 @@ public class Translator implements Opcodes
 
         InsnList insnList = method.getInstructions();
 
-        if (!removeFinal)
+        if (!removeFinal || classAccess.isInterface())
             for (AbstractInsnNode insn : insnList.toArray())
                 if (insn instanceof FieldInsnNode field)
                     if (field.getOpcode() == Opcodes.PUTFIELD || field.getOpcode() == Opcodes.PUTSTATIC)
@@ -320,7 +320,7 @@ public class Translator implements Opcodes
                     /* Try injecting invokedynamics,
                      * return false if we find something unsupported
                      */
-                    boolean invokeDynamicsDebug = true;
+                    boolean invokeDynamicsDebug = false;
                     if (translateInvokeDynamics == null)
                         translateInvokeDynamics = new TranslateInvokeDynamics(
                             node, classAccess,

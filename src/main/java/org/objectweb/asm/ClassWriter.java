@@ -1015,154 +1015,31 @@ public class ClassWriter extends ClassVisitor {
   }
   protected String getCommonSuperClass(final String type1, final String type2, obzcu.re.vm.Obzcure obzcure) {
     ClassLoader classLoader = getClassLoader();
-
-    Class<?> class1 = null, class2 = null;
-
-    boolean useOriginalCode = true;
-    if (useOriginalCode)
-    {
-      try {
-        class1 = Class.forName(type1.replace('/', '.'), false, classLoader);
-      } catch (ClassNotFoundException e) {
-        throw new TypeNotPresentException(type1, e);
-      }
-      try {
-        class2 = Class.forName(type2.replace('/', '.'), false, classLoader);
-      } catch (ClassNotFoundException e) {
-        throw new TypeNotPresentException(type2, e);
-      }
-      if (class1.isAssignableFrom(class2)) {
-        return type1;
-      }
-      if (class2.isAssignableFrom(class1)) {
-        return type2;
-      }
-      if (class1.isInterface() || class2.isInterface()) {
-        return "java/lang/Object";
-      } else {
-        do {
-          class1 = class1.getSuperclass();
-        } while (!class1.isAssignableFrom(class2));
-        return class1.getName().replace('.', '/');
-      }
+    Class<?> class1, class2;
+    try {
+      class1 = Class.forName(type1.replace('/', '.'), false, classLoader);
+    } catch (ClassNotFoundException e) {
+      throw new TypeNotPresentException(type1, e);
     }
-
-//    obzcu.re.vm2.utils.asm.ClassWrapper wrapper1 = null;
-//    try {
-//      class1 = Class.forName(type1.replace('/', '.'), false, classLoader);
-//    } catch (ClassNotFoundException e) {
-//      if (obzcure != null)
-//        wrapper1 = obzcure.getClassWrapper(type1);
-//      if (wrapper1 == null)
-//        throw new TypeNotPresentException(type1, e);
-//    }
-//
-//    obzcu.re.vm2.utils.asm.ClassWrapper wrapper2 = null;
-//    try {
-//      class2 = Class.forName(type2.replace('/', '.'), false, classLoader);
-//    } catch (ClassNotFoundException e) {
-//      if (obzcure != null)
-//        wrapper2 = obzcure.getClassWrapper(type2);
-//      if (wrapper2 == null)
-//        throw new TypeNotPresentException(type2, e);
-//    }
-//
-//    // Run normal code!
-//    if (class1 != null && class2 != null)
-//    {
-//      if (class1.isAssignableFrom(class2)) {
-//        return type1;
-//      }
-//      if (class2.isAssignableFrom(class1)) {
-//        return type2;
-//      }
-//      if (class1.isInterface() || class2.isInterface()) {
-//        return "java/lang/Object";
-//      } else {
-//        do {
-//          class1 = class1.getSuperclass();
-//        } while (!class1.isAssignableFrom(class2));
-//        return class1.getName().replace('.', '/');
-//      }
-//    }
-//
-//    // Backup solution
-//    if (obzcure == null)
-//      return type1;
-//
-//    // type1 is a Class, type2 is a ClassWrapper
-//    if (class1 != null && wrapper2 != null)
-//    {
-//      if (obzcure.isAssignableFrom(class1, wrapper2))
-//      {
-//        return type1;
-//      }
-//      if (obzcure.isAssignableFrom(wrapper2.getSuperName(), class1.getCanonicalName().replace(".", "/")))
-//      {
-//        return type2;
-//      }
-//      if (class1.isInterface() || wrapper2.getAccess().isInterface()) {
-//        return "java/lang/Object";
-//      } else {
-//        do {
-//          class1 = class1.getSuperclass();
-//        } while (!obzcure.isAssignableFrom(class1, wrapper2));
-//        return class1.getName().replace('.', '/');
-//      }
-//    }
-//
-//    // type1 is a ClassWrapper, type2 is a Class
-//    if (wrapper1 != null && class2 != null)
-//    {
-//      if (obzcure.isAssignableFrom(wrapper1.getSuperName(), class2.getCanonicalName().replace(".", "/")))
-//      {
-//        return type1;
-//      }
-//      if (obzcure.isAssignableFrom(class2, wrapper1))
-//      {
-//        return type2;
-//      }
-//      if (wrapper1.getAccess().isInterface() || class2.isInterface()) {
-//        return "java/lang/Object";
-//      } else {
-//        do {
-//          String superName = wrapper1.getSuperName();
-//          wrapper1 = obzcure.getClassWrapper(superName);
-//          if (wrapper1 == null)
-//            throw new TypeNotPresentException(type1, new Exception("Couldn't find type '" + superName + "'."));
-//        } while (!obzcure.isAssignableFrom(wrapper1.getName(), class2.getCanonicalName().replace(".", "/")));
-//        return wrapper1.getName();
-//      }
-//    }
-//
-//    // Both types are a ClassWrapper
-//    if (wrapper1 != null && wrapper2 != null)
-//    {
-//      if (obzcure.isAssignableFrom(wrapper1.getName(), wrapper2.getName()))
-//      {
-//        return type1;
-//      }
-//      if (obzcure.isAssignableFrom(wrapper2.getName(), wrapper1.getName()))
-//      {
-//        return type2;
-//      }
-//      if (wrapper1.getAccess().isInterface() || wrapper2.getAccess().isInterface()) {
-//        return "java/lang/Object";
-//      } else {
-//        do {
-//          String superName = wrapper1.getSuperName();
-//          wrapper1 = obzcure.getClassWrapper(superName);
-//          if (wrapper1 == null)
-//            throw new TypeNotPresentException(type1, new Exception("Couldn't find type '" + superName + "'."));
-//        } while (!obzcure.isAssignableFrom(wrapper1.getName(), wrapper2.getName()));
-//        return wrapper1.getName();
-//      }
-//    }
-//
-//    // Backup solution
-//    return type1;
-
-    return null;
+    try {
+      class2 = Class.forName(type2.replace('/', '.'), false, classLoader);
+    } catch (ClassNotFoundException e) {
+      throw new TypeNotPresentException(type2, e);
+    }
+    if (class1.isAssignableFrom(class2)) {
+      return type1;
+    }
+    if (class2.isAssignableFrom(class1)) {
+      return type2;
+    }
+    if (class1.isInterface() || class2.isInterface()) {
+      return "java/lang/Object";
+    } else {
+      do {
+        class1 = class1.getSuperclass();
+      } while (!class1.isAssignableFrom(class2));
+      return class1.getName().replace('.', '/');
+    }
   }
 
   /**

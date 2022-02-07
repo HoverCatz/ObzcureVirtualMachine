@@ -2,3 +2,6 @@
 /.idea/
 /target/
 /TestJar/target/
+/TestJar/target/classes/
+/TestJar/target/maven-status/
+/TestJar/target/maven-archiver/

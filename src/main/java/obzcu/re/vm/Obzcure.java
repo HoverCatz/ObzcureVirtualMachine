@@ -47,12 +47,13 @@ public class Obzcure
             boolean skipDebug = false;
             boolean rndMeow = false;
 
-            boolean localDevTesting = true;
+            boolean localDevTesting = false;
             if (localDevTesting)
             {
                 outputFile = new File("output", "out.jar");
                 if (outputFile.exists() && !outputFile.delete())
                     throw new RuntimeException("Output file already exists, and failed to delete it.");
+
 //                inputFile = Objects.requireNonNull(new File("TestJar/target/").listFiles(f -> f.getName().endsWith(".jar")))[0];
                 inputFile = new File("C:\\Users\\" + System.getProperty("user.name") + "\\IdeaProjects\\ItzCounter\\build\\libs\\ItzCounter-1.0-SNAPSHOT.jar");
 
@@ -146,15 +147,25 @@ public class Obzcure
                 // This opens up for virtualization of more methods.
                 if (removeFinal)
                 {
+                    AccessHelper classAccess = wrapper.getAccess();
+                    // The Java spec allows only final static fields in interfaces, but this field/method is not final.
+                    if (classAccess.isInterface())
+                        continue;
                     wrapper.getFields().forEach(f -> {
                         AccessHelper access = f.getAccess();
-                        access.removeAccess(Opcodes.ACC_FINAL);
-                        access.sync(f);
+                        if (access.isFinal())
+                        {
+                            access.removeAccess(Opcodes.ACC_FINAL);
+                            access.sync(f);
+                        }
                     });
                     wrapper.getMethods().forEach(m -> {
                         AccessHelper access = m.getAccess();
-                        access.removeAccess(Opcodes.ACC_FINAL);
-                        access.sync(m);
+                        if (access.isFinal())
+                        {
+                            access.removeAccess(Opcodes.ACC_FINAL);
+                            access.sync(m);
+                        }
                     });
                 }
             }
