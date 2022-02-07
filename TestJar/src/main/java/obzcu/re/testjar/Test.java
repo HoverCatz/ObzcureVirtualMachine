@@ -87,9 +87,15 @@ public class Test
         this();
     }
 
+    static int k;
     public Test(int i, double d)
     {
-        this(i);
+        this(k = i);
+    }
+
+    static int getTestInt()
+    {
+        return 1337;
     }
 
     public static void main(String[] args) throws Throwable
@@ -105,7 +111,10 @@ public class Test
         // TODO: Unsupported returnType: Z
         //       Error: Invokedynamic instruction has unsupported arguments in: obzcu/re/testjar/Test$TestLineNumberNode equals(Ljava/lang/Object;)Z
 
-        new Test(1, 2D);
+        Test t = new Test(getTestInt(), 2D);
+        System.out.println(k);
+
+        new SecondClass(t, getTestInt(), 2D);
 
 //        Test t = new Test();
 //

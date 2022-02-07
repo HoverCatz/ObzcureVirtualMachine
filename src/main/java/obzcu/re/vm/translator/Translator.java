@@ -5,6 +5,7 @@ import obzcu.re.virtualmachine.VMLoader;
 import obzcu.re.virtualmachine.asm.VMTryCatch;
 import obzcu.re.vm.Obzcure;
 import obzcu.re.vm.ObzcureException;
+import obzcu.re.vm.ObzcureNoNeedForTranslationException;
 import obzcu.re.vm.utils.ASMUtils;
 import obzcu.re.vm.utils.asm.*;
 import org.objectweb.asm.Opcodes;
@@ -165,14 +166,15 @@ public class Translator implements Opcodes
             final int opcode = insn.getOpcode();
             if (debug) System.out.println();
             if (debug) System.out.println("curr: " + index + ", opcode: " + getOpcodeName(opcode));
+            // Handle constructor <init> code
             if (!hasReachedSupercall)
             {
                 constructorInsnList.add(insn);
                 if (insn instanceof MethodInsnNode invoke)
                 {
-                    if (invoke.owner.equals("java/lang/Object") && invoke.name.equals("<init>") && invoke.desc.equals("()V"))
+                    if (invoke.owner.equals(superClass) && invoke.name.equals("<init>") && invoke.desc.endsWith(")V"))
                     {
-                        if (debug) System.out.println("VMIgnore");
+                        if (debug) System.out.println("VMIgnore (constructor superCall reached)");
                         writer.writeUTF("VMIgnore");
                         hasReachedSupercall = true;
                         continue;
@@ -181,7 +183,7 @@ public class Translator implements Opcodes
                 else
                 if (!(insn instanceof LabelNode))
                 {
-                    if (debug) System.out.println("VMIgnore");
+                    if (debug) System.out.println("VMIgnore (constructor nonLabel found)");
                     writer.writeUTF("VMIgnore");
                     continue;
                 }
@@ -409,6 +411,8 @@ public class Translator implements Opcodes
                 default -> throw new ObzcureException("Instruction not implemented yet: " + insn.getClass().getSimpleName());
             }
         }
+        if (!hasReachedSupercall)
+            throw new ObzcureNoNeedForTranslationException("Never reached superCall, we don't have to translate the method " + className + " " + methodName + methodDesc + ".");
         writer.writeUTF("Meow");
     }
 
@@ -443,7 +447,7 @@ public class Translator implements Opcodes
         if (!method.hasInstructions())
             return false;
 
-        // TODO: Find a better solution for constructors
+        // Ignore unsupported constructors
         if (isConstructor && !translateConstructor)
             return false;
 
@@ -489,7 +493,10 @@ public class Translator implements Opcodes
         catch (Throwable t)
         {
 //            t.printStackTrace();
-            System.out.println("Error: " + t.getMessage());
+            if (t instanceof ObzcureNoNeedForTranslationException ex)
+                System.out.println(ex.getMessage());
+            else
+                System.err.println("Error: " + t.getMessage());
             return false;
         }
 
@@ -520,14 +527,7 @@ public class Translator implements Opcodes
             String methodHandlesClassName = methodHandlesType.getInternalName();
             String methodHandlesDescriptor = methodHandlesType.getDescriptor();
 
-//            System.out.println("mainClassName: " + mainClassName);
-//            System.out.println("loaderClassName: " + loaderClassName);
-//            System.out.println("tryCatchClassName: " + tryCatchClassName);
-//            System.out.println("tryCatchTypeArrayDescriptor: " + tryCatchTypeArrayDescriptor);
-
             InsnList insnList = new InsnList();
-//            insnList.add(new TypeInsnNode(NEW, Type.getType(ObzcureVM.class).getInternalName()));
-//            insnList.add(new InsnNode(DUP));
             insnList.add(ASMUtils.getNumberInsn(resourceIndex));
             insnList.add(ASMUtils.getNumberInsn(method.getMaxLocals() + extraLocals));
             insnList.add(ASMUtils.getNumberInsn(method.getMaxStack()));
@@ -570,7 +570,7 @@ public class Translator implements Opcodes
                 }
             }
 
-            // GETSTATIC obzcu/re/testjar/Test.lookup : Ljava/lang/invoke/MethodHandles$Lookup;
+            // GETSTATIC obzcu/re/testjar/Test.lookup$obzcure : Ljava/lang/invoke/MethodHandles$Lookup;
             insnList.add(new FieldInsnNode(GETSTATIC, className, lookupName, methodHandlesDescriptor));
 
             boolean injectBytes = isTestRun && !simulateReal;
@@ -682,13 +682,10 @@ public class Translator implements Opcodes
             if (insnList.size() == 0)
                 throw new ObzcureException("vmNode instruction set was empty");
 
+            // Inject original constructor instructions
             if (translateConstructor)
-            {
-//                insnList.insert(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V"));
-//                insnList.insert(new VarInsnNode(ALOAD, 0));
                 for (int i = constructorInsnList.size() - 1; i >= 0; i--)
                     insnList.insert(constructorInsnList.get(i));
-            }
 
             method.setInstructions(insnList);
 
@@ -704,9 +701,6 @@ public class Translator implements Opcodes
             if (hasTryCatches)
                 method.getTryCatchBlocks().clear();
 
-            // Obfuscate numbers
-//            InvokeDynamicsObfuscation.hideNumbers(method.getMethodNode());
-
             if (debug)
                 System.out.println("[" + className + "] Successfully translated method '" + methodName + methodDesc + "'.");
 
@@ -719,7 +713,6 @@ public class Translator implements Opcodes
         result = baos.toByteArray();
         return true;
     }
-
 
     private final String[] OPCODE_NAMES = {
             "nop", "aconst_null", "iconst_m1", "iconst_0", "iconst_1",

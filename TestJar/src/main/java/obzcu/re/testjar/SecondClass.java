@@ -11,6 +11,16 @@ public class SecondClass extends AbsClass
         System.out.println(testNumber);
     }
 
+    public SecondClass(Test test, int i)
+    {
+        this(test);
+    }
+
+    public SecondClass(Test test, int i, double v)
+    {
+        super(test, i, v);
+    }
+
     public char testBoolean()
     {
         return 1;
