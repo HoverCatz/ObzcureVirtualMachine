@@ -36,7 +36,7 @@ Virtualized output file:
 - 4873 ms
 - 4937 ms
 
-Original output file:
+Original input file:
 - 53 ms
 - 18 ms
 - 21 ms
