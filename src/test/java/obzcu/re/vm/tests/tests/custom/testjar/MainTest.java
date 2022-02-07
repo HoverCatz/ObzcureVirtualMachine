@@ -14,6 +14,11 @@ public class MainTest
 
     private MainTest()
     {
+        doit();
+    }
+
+    private void doit()
+    {
         System.out.println("Hello world from testjar's MainTest!");
         SecondClass secondClass = new SecondClass()
         {

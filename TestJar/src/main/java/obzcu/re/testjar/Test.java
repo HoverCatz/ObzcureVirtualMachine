@@ -82,26 +82,48 @@ public class Test
         System.out.println("Hello world 5");
     }
 
+    public Test(int i)
+    {
+        this();
+    }
+
+    public Test(int i, double d)
+    {
+        this(i);
+    }
+
     public static void main(String[] args) throws Throwable
     {
 
-        Test t = new Test();
+        // TODO: Unsupported returnType: java/awt/event/ActionListener
 
-        Thread test = new Thread(t::testVirtualThread);
-        test.start();
+        // TODO: Unsupported returnType: I
+        //       Error: Invokedynamic instruction has unsupported arguments in: obzcu/re/testjar/Test$TestLineNumberNode hashCode()I
 
-        Consumer<String> test1 = t::testVirtualConsumer;
-        test1.accept("Hello world 2");
+        // TODO: Error: Invokedynamic instruction has unsupported arguments in: obzcu/re/testjar/Test$TestLineNumberNode toString()Ljava/lang/String;
 
-        Function<String, String> test2 = t::testVirtualFunction;
-        test2.apply("Hello world 3");
+        // TODO: Unsupported returnType: Z
+        //       Error: Invokedynamic instruction has unsupported arguments in: obzcu/re/testjar/Test$TestLineNumberNode equals(Ljava/lang/Object;)Z
 
-        Predicate<String> test3 = t::testVirtualPredicate;
-        test3.and(t::testVirtualPredicate);
-        test3.test("Hello world 4");
+        new Test(1, 2D);
 
-        Runnable test4 = t::testVirtualRunnable;
-        test4.run();
+//        Test t = new Test();
+//
+//        Thread test = new Thread(t::testVirtualThread);
+//        test.start();
+//
+//        Consumer<String> test1 = t::testVirtualConsumer;
+//        test1.accept("Hello world 2");
+//
+//        Function<String, String> test2 = t::testVirtualFunction;
+//        test2.apply("Hello world 3");
+//
+//        Predicate<String> test3 = t::testVirtualPredicate;
+//        test3.and(t::testVirtualPredicate);
+//        test3.test("Hello world 4");
+//
+//        Runnable test4 = t::testVirtualRunnable;
+//        test4.run();
 
 //        Test test = new Test();
 //

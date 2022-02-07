@@ -123,12 +123,19 @@ public class VMMethodInsnNode extends VMNode
         }
         else
         {
+//            System.out.println();
+//            System.out.println("VMMethodInsnNode");
+//            System.out.println("invokeType: " + invokeType);
+//            System.out.println("clazz: " + clazz);
+//            System.out.println("name: " + name);
+//            System.out.println("args: " + Arrays.toString(argumentTypes));
+//            System.out.println("objects: " + Arrays.toString(objects));
+//            System.out.println("returnType: " + returnType);
+//            System.out.println("stack: " + stack);
+
             Object ref = stack.pop();
 
-//            System.out.println();
 //            System.out.println("ref: " + ref);
-//            System.out.println("clazz: " + clazz);
-//            System.out.println("argumentTypes: " + Arrays.toString(argumentTypes));
 
             Constructor<?> constructor = vm.getConstructor(clazz, argumentTypes);
             Object invoke = constructor.newInstance(objects);

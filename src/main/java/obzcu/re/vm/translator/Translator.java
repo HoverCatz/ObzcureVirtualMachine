@@ -37,17 +37,23 @@ public class Translator implements Opcodes
     private final String className;
     private final String methodName;
     private final String methodDesc;
+    private final String superClass;
     private final boolean simulateReal;
     private final boolean forcePublic;
     private final boolean removeFinal;
     private final boolean isConstructor;
+    private final boolean translateConstructor;
     private final boolean isStatic;
+    private final boolean isTestRun;
 
     private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
     private final DataOutputStream writer = new DataOutputStream(baos);
 
     private byte[] result = null;
     private TranslateInvokeDynamics translateInvokeDynamics = null;
+    private final List<AbstractInsnNode> constructorInsnList = new ArrayList<>();
+
+    public static final String lookupName = "lookup$obzcure";
 
     public boolean debug = false;
     private final boolean debugPrettyPrint = false;
@@ -62,20 +68,23 @@ public class Translator implements Opcodes
     {
         this.node = node;
         this.method = method;
+        this.obzcure = obzcure;
         this.classAccess = node.getAccess();
         this.methodAccess = method.getAccess();
         this.className = node.getName();
+        this.superClass = node.getSuperName();
         this.methodName = method.getName();
         this.methodDesc = method.getDesc();
         this.simulateReal = simulateReal;
         this.isConstructor = methodName.equals("<init>");
         this.isStatic = methodAccess.isStatic();
-        this.obzcure = obzcure;
         this.forcePublic = forcePublic;
         this.removeFinal = removeFinal;
+        this.isTestRun = obzcure == null;
+        this.translateConstructor = isConstructor && methodDesc.endsWith(")V")
+//                && superClass.equals("java/lang/Object")
+        ;
     }
-
-    public static final String lookupName = "lookup$obzcure";
 
     public static void injectLookupField(ClassWrapper node, MethodWrapper clinit)
     {
@@ -149,12 +158,34 @@ public class Translator implements Opcodes
         writer.writeUTF(methodName);
         writer.writeUTF(methodDesc);
 
+        boolean hasReachedSupercall = !translateConstructor;
         for (AbstractInsnNode insn : insnList.toArray())
         {
             int index = insnList.indexOf(insn);
             final int opcode = insn.getOpcode();
             if (debug) System.out.println();
             if (debug) System.out.println("curr: " + index + ", opcode: " + getOpcodeName(opcode));
+            if (!hasReachedSupercall)
+            {
+                constructorInsnList.add(insn);
+                if (insn instanceof MethodInsnNode invoke)
+                {
+                    if (invoke.owner.equals("java/lang/Object") && invoke.name.equals("<init>") && invoke.desc.equals("()V"))
+                    {
+                        if (debug) System.out.println("VMIgnore");
+                        writer.writeUTF("VMIgnore");
+                        hasReachedSupercall = true;
+                        continue;
+                    }
+                }
+                else
+                if (!(insn instanceof LabelNode))
+                {
+                    if (debug) System.out.println("VMIgnore");
+                    writer.writeUTF("VMIgnore");
+                    continue;
+                }
+            }
             switch (insn)
             {
                 case LabelNode labelNode -> {
@@ -383,7 +414,7 @@ public class Translator implements Opcodes
 
     private void assertFieldNotFinal(FieldInsnNode fieldInsnNode)
     {
-        if (obzcure == null) return;
+        if (isTestRun) return;
         String owner = fieldInsnNode.owner;
         ClassWrapper ownerNode = obzcure.getClassWrapper(owner);
         if (ownerNode == null) return;
@@ -412,21 +443,21 @@ public class Translator implements Opcodes
         if (!method.hasInstructions())
             return false;
 
-        // TODO: Find a solution for constructors
-        if (methodName.equals("<init>"))
+        // TODO: Find a better solution for constructors
+        if (isConstructor && !translateConstructor)
             return false;
 
-        // If tests, don't check for class/method names
-        if (obzcure != null)
+        boolean useFilter;
+        if (isTestRun)
+            useFilter = false;
+        else
+            useFilter = false;
+        if (useFilter)
         {
-            boolean useFilter = false;
-            if (useFilter)
-            {
-                if (!className.startsWith("obzcu/re/"))
-                    return false;
-                if (!methodName.equals("<init>"))
-                    return false;
-            }
+            if (!className.startsWith("me/"))
+                return false;
+            if (!methodName.equals("process"))
+                return false;
         }
 
         Type returnType = Type.getReturnType(method.getDesc());
@@ -542,7 +573,7 @@ public class Translator implements Opcodes
             // GETSTATIC obzcu/re/testjar/Test.lookup : Ljava/lang/invoke/MethodHandles$Lookup;
             insnList.add(new FieldInsnNode(GETSTATIC, className, lookupName, methodHandlesDescriptor));
 
-            boolean injectBytes = obzcure == null && !simulateReal;
+            boolean injectBytes = isTestRun && !simulateReal;
             if (injectBytes)
             {
                 // GETSTATIC className.vmNodes : [B
@@ -650,6 +681,14 @@ public class Translator implements Opcodes
 
             if (insnList.size() == 0)
                 throw new ObzcureException("vmNode instruction set was empty");
+
+            if (translateConstructor)
+            {
+//                insnList.insert(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V"));
+//                insnList.insert(new VarInsnNode(ALOAD, 0));
+                for (int i = constructorInsnList.size() - 1; i >= 0; i--)
+                    insnList.insert(constructorInsnList.get(i));
+            }
 
             method.setInstructions(insnList);
 
