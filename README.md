@@ -45,4 +45,6 @@ Original input file:
 - 12 ms
 - 9 ms
 
-*As you can see from these 5 test runs, the virtualized version of a jar is up to 606 times slower than the original jar.*
+*As you can see from these 5 test runs, the virtualized version of a jar is up to 606 times slower than the original jar.  
+This is a worst case scenario, where a huge jar was fully virtualized including lots of nested loops.  
+If you only virtualize a few specific methods, it shouldn't be much slower than the original.*
