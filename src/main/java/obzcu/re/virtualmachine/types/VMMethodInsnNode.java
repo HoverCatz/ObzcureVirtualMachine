@@ -92,24 +92,27 @@ public class VMMethodInsnNode extends VMNode
             else
                 mh = vm.getMethodHandle(clazz, name, argumentTypes);
 
+            mh = MethodHandles.explicitCastArguments(value == null ? mh : mh.bindTo(value), MethodType.methodType(returnType, argumentTypes));
+
             Object invoke;
             if (value == null)
             {
                 if (objects.length == 0)
                     invoke = mh.invoke();
-                else
-                    invoke = mh.invokeWithArguments(objects);
+                else {
+                    invoke = mh.asFixedArity().invokeWithArguments(objects);
+                }
             }
             else
             {
                 if (objects.length == 0)
-                    invoke = mh.bindTo(value).invoke();
+                    invoke = mh.invoke();
                 else
                 {
 //                    System.out.println("mh: " + mh);
 //                    System.out.println("objects.length: " + objects.length);
 //                    System.out.println("objects: " + Arrays.toString(objects));
-                    invoke = mh.bindTo(value).invokeWithArguments(objects);
+                    invoke = mh.invokeWithArguments(objects);
                 }
             }
 
@@ -138,7 +141,12 @@ public class VMMethodInsnNode extends VMNode
 //            System.out.println("ref: " + ref);
 
             Constructor<?> constructor = vm.getConstructor(clazz, argumentTypes);
-            Object invoke = constructor.newInstance(objects);
+//            Object invoke = constructor.newInstance(objects);
+
+            // can't create enum objects with reflection
+
+            MethodHandle mh = MethodHandles.lookup().unreflectConstructor(constructor);
+            Object invoke = mh.invokeWithArguments(objects);
 
             stack.replace(invoke); // Replace top of stack with new instance
         }

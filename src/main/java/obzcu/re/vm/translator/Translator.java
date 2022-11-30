@@ -258,6 +258,16 @@ public class Translator implements Opcodes
                     }
                 }
                 case MethodInsnNode methodInsnNode -> {
+
+                    if (methodInsnNode.name.equals("clone")
+                            && methodInsnNode.desc.equals("()Ljava/lang/Object;")) {
+                        Type owner = Type.getObjectType(methodInsnNode.owner);
+                        if (owner.getSort() == Type.ARRAY) {
+                            // Since this does not work
+                            throw new IllegalStateException("clone method is not supported in: " + className + " " + methodName + methodDesc);
+                        }
+                    }
+
                     if (debug) System.out.println("VMMethodInsnNode: " + opcode);
                     writer.writeUTF("VMMethodInsnNode");
                     writer.writeInt(opcode);
