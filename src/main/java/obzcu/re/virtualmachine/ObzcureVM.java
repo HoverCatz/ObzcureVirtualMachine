@@ -901,6 +901,10 @@ public final class ObzcureVM
         return OPCODE_NAMES[index];
     }
 
+    public boolean isWide(Object value) {
+        return value instanceof Long || value instanceof Double;
+    }
+
     public static class Duo<A, B>
     {
         public A a;
