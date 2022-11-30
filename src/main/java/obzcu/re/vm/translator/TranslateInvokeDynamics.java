@@ -36,9 +36,19 @@ public record TranslateInvokeDynamics(ClassWrapper node,
         return switch (returnType.getInternalName())
         {
             case "java/lang/Runnable" -> inject(idin, "Runnable");
+
+            // Consumers
             case "java/util/function/Consumer" -> inject(idin, "Consumer");
+            case "java/util/function/IntConsumer" -> inject(idin, "IntConsumer");
+            case "java/util/function/LongConsumer" -> inject(idin, "LongConsumer");
+            case "java/util/function/DoubleConsumer" -> inject(idin, "DoubleConsumer");
+
+            // Others
             case "java/util/function/Function" -> inject(idin, "Function");
             case "java/util/function/Predicate" -> inject(idin, "Predicate");
+            case "java/util/function/Supplier" -> inject(idin, "Supplier");
+            // TODO: Implement support for every single class inside the package `java.util.function`
+
             case "java/lang/String" -> injectStringConcat(idin);
             default -> {
                 System.out.println("Unsupported returnType: " + returnType.getInternalName());
@@ -127,9 +137,17 @@ public record TranslateInvokeDynamics(ClassWrapper node,
     private static final Map<String, String> nameMap = new HashMap<>()
     {{
         put("Runnable", "run");
+
+        // Consumers
         put("Consumer", "accept");
+        put("IntConsumer", "accept");
+        put("LongConsumer", "accept");
+        put("DoubleConsumer", "accept");
+
+        // Others
         put("Function", "apply");
         put("Predicate", "test");
+        put("Supplier", "get");
     }};
 
     private boolean inject(InvokeDynamicInsnNode idin, String which) throws Throwable

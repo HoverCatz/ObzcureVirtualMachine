@@ -18,7 +18,7 @@ import java.util.jar.JarOutputStream;
 /**
  * @author HoverCatz
  * @created 09.01.2022
- * @url https://github.com/HoverCatz
+ * @url <a href="https://github.com/HoverCatz">github.com/HoverCatz</a>
  **/
 public class Obzcure
 {

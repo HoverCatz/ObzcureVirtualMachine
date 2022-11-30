@@ -47,7 +47,7 @@ public final class ObzcureVM
     public ObzcureVM(int index, int maxLocals, int maxStack, VMTryCatch[] tryCatch, MethodHandles.Lookup lookup)
     {
         this.localsMap = new HashMap<>(maxLocals);
-        this.vmStack = new VMStack(maxStack);
+        this.vmStack = new VMStack(this, maxStack);
         this.tryCatch = tryCatch;
         this.lookup = lookup;
         try {
@@ -62,7 +62,7 @@ public final class ObzcureVM
     public ObzcureVM(int index, int maxLocals, int maxStack, VMTryCatch[] tryCatch, MethodHandles.Lookup lookup, byte[] result)
     {
         this.localsMap = new HashMap<>(maxLocals);
-        this.vmStack = new VMStack(maxStack);
+        this.vmStack = new VMStack(this, maxStack);
         this.tryCatch = tryCatch;
         this.lookup = lookup;
         try {
@@ -906,7 +906,6 @@ public final class ObzcureVM
     public boolean isWide(Object value) {
         return value instanceof Long || value instanceof Double;
     }
-
 
     public static class Duo<A, B>
     {

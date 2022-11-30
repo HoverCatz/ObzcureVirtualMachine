@@ -4,14 +4,15 @@ import obzcu.re.virtualmachine.VMStack;
 import obzcu.re.virtualmachine.ObzcureVM;
 import obzcu.re.virtualmachine.asm.VMHandle;
 import obzcu.re.virtualmachine.asm.VMType;
-import obzcu.re.virtualmachine.types.invokedynamics.VMConsumer;
-import obzcu.re.virtualmachine.types.invokedynamics.VMFunction;
-import obzcu.re.virtualmachine.types.invokedynamics.VMPredicate;
-import obzcu.re.virtualmachine.types.invokedynamics.VMRunnable;
+import obzcu.re.virtualmachine.types.invokedynamics.*;
 
 
 import java.lang.invoke.*;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
 
 /**
  * @author HoverCatz
@@ -44,9 +45,17 @@ public class VMInvokeDynamicInsnNode extends VMNode
         {
             case "StringConcatFactory" -> prepareStringConcat(vm, stack, lookup);
             case "Runnable" -> prepareRunnable(vm, stack, lookup);
-            case "Consumer" -> prepareConsumer(vm, stack, lookup);
+
+            // Consumers
+            case "Consumer" -> prepareConsumer(vm, stack, lookup, Object.class.getName());
+            case "IntConsumer" -> prepareConsumer(vm, stack, lookup, Integer.class.getName());
+            case "LongConsumer" -> prepareConsumer(vm, stack, lookup, Long.class.getName());
+            case "DoubleConsumer" -> prepareConsumer(vm, stack, lookup, Double.class.getName());
+
+            // Others
             case "Function" -> prepareFunction(vm, stack, lookup);
             case "Predicate" -> preparePredicate(vm, stack, lookup);
+            case "Supplier" -> prepareSupplier(vm, stack, lookup);
             default -> throw new RuntimeException("Invalid invokedynamics type: " + which);
         }
 
@@ -92,6 +101,75 @@ public class VMInvokeDynamicInsnNode extends VMNode
         }
 
         stack.push(sb.toString());
+    }
+
+    private void prepareSupplier(ObzcureVM vm, VMStack stack, MethodHandles.Lookup lookup) throws Throwable
+    {
+        int tag = getNextInt();
+        if (vm.debug)
+            System.out.println("!!! tag: " + tag);
+
+        String owner = getNextString();
+        String name = getNextString();
+
+        String[] args = (String[]) getNext();
+        Class<?>[] argsClasses = getArgumentClasses(vm, args);
+
+        String[] arguments = (String[]) getNext();
+        Class<?>[] argumentClasses = getArgumentClasses(vm, arguments);
+
+        Class<?> clazz = vm.getClass(owner);
+        if (clazz == null)
+            throw new IllegalStateException("Invokedynamics owner class not found.");
+
+//        final Method method = vm.getMethod(clazz, name, argsClasses);
+//        if (method == null)
+//            throw new IllegalStateException("Invokedynamics method not found.");
+//
+//        if (!method.trySetAccessible() && vm.debug)
+//            System.err.println("Couldn't set method accessible. This may cause the method call to fail.");
+
+        final MethodHandle mh = vm.getMethodHandle(clazz, name, argsClasses);
+        if (mh == null)
+            throw new IllegalStateException("Invokedynamics method not found.");
+
+        if (vm.debug)
+        {
+            System.out.println("!!! stack: " + stack);
+            System.out.println("!!! inputs3: " + Arrays.toString(args));
+            System.out.println("!!! inputs4: " + Arrays.toString(arguments));
+            System.out.println("!!! mh: " + mh);
+        }
+
+        Object[] popped = new Object[argumentClasses.length];
+        for (int i = popped.length - 1; i >= 0; i--)
+            popped[i] = stack.pop();
+
+        if (vm.debug)
+            System.out.println("!!! popped: " + Arrays.toString(popped));
+
+        VMSupplier s = new VMSupplier(() ->
+        {
+            int argsCount = popped.length;
+            try
+            {
+                // Supplier<o>#get returns T
+                Object[] objects = new Object[argsCount + 1];
+                if (popped.length > 0)
+                    System.arraycopy(popped, 0, objects, 0, popped.length);
+                if (vm.debug)
+                {
+                    System.out.println("!!! objects.length: " + objects.length);
+                    System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).toList());
+                }
+                return mh.invokeWithArguments(objects);
+            }
+            catch (Throwable t)
+            {
+                throw new RuntimeException(t);
+            }
+        });
+        stack.push(s);
     }
 
     private void preparePredicate(ObzcureVM vm, VMStack stack, MethodHandles.Lookup lookup) throws Throwable
@@ -310,7 +388,7 @@ public class VMInvokeDynamicInsnNode extends VMNode
         stack.push(r);
     }
 
-    private void prepareConsumer(ObzcureVM vm, VMStack stack, MethodHandles.Lookup lookup) throws Throwable
+    private void prepareConsumer(ObzcureVM vm, VMStack stack, MethodHandles.Lookup lookup, String type) throws Throwable
     {
         int tag = getNextInt();
         if (vm.debug)
@@ -342,6 +420,7 @@ public class VMInvokeDynamicInsnNode extends VMNode
 
         if (vm.debug)
         {
+            System.out.println("!!! type: " + type);
             System.out.println("!!! tag: " + (tag == 5 ? "H_INVOKEVIRTUAL" : "H_INVOKESTATIC"));
             System.out.println("!!! stack: " + stack);
             System.out.println("!!! inputs3: " + Arrays.toString(args));
@@ -355,11 +434,14 @@ public class VMInvokeDynamicInsnNode extends VMNode
         if (vm.debug)
             System.out.println("!!! popped: " + Arrays.toString(popped));
 
-        VMConsumer c = new VMConsumer(arg ->
+        Class<?> typeClass = vm.getClass(type);
+
+        Consumer<Object> consumer = (Consumer<Object>) arg ->
         {
             int argsCount = popped != null ? popped.length : 0;
             try
             {
+                arg = vm.cast(arg, typeClass);
                 // Consumer#accept returns void
                 if (argsCount <= 0)
                     mh.invoke(arg);
@@ -381,7 +463,17 @@ public class VMInvokeDynamicInsnNode extends VMNode
             {
                 throw new RuntimeException(t);
             }
-        });
+        };
+
+        Object c = switch (type)
+        {
+            case "java.lang.Object" -> consumer;
+            case "java.lang.Integer" -> (IntConsumer) consumer::accept;
+            case "java.lang.Long" -> (LongConsumer) consumer::accept;
+            case "java.lang.Double" -> (DoubleConsumer) consumer::accept;
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
+
         stack.push(c);
     }
 

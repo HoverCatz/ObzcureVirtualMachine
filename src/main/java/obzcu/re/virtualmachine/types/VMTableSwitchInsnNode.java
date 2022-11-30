@@ -26,7 +26,7 @@ public class VMTableSwitchInsnNode extends VMNode
 
         if (vm.debug) System.out.println("VMTableSwitchInsnNode");
 
-        int num = stack.popInt(vm);
+        int num = stack.popInt();
         if (vm.debug) System.out.println("num: " + num);
 
         int min = getNextInt();

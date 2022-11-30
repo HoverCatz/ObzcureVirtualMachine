@@ -74,15 +74,18 @@ public class VMMethodInsnNode extends VMNode
 //                    System.out.println("\t" + (o.getClass().isPrimitive() ? o : "<object>") + " (" + o.getClass().getSimpleName() + ")");
 //            System.out.println();
 
-//            System.out.println();
-//            System.out.println("VMMethodInsnNode");
-//            System.out.println("invokeType: " + invokeType);
-//            System.out.println("clazz: " + clazz);
-//            System.out.println("name: " + name);
-//            System.out.println("args: " + Arrays.toString(argumentTypes));
-//            System.out.println("objects: " + Arrays.toString(objects));
-//            System.out.println("returnType: " + returnType);
-//            System.out.println("value: " + value);
+//            if (vm.debug)
+            {
+//                System.out.println();
+//                System.out.println("VMMethodInsnNode");
+//                System.out.println("invokeType: " + invokeType);
+//                System.out.println("clazz: " + clazz);
+//                System.out.println("name: " + name);
+//                System.out.println("args: " + Arrays.toString(argumentTypes));
+//                System.out.println("objects: " + Arrays.toString(objects));
+//                System.out.println("returnType: " + returnType);
+//                System.out.println("value: " + value);
+            }
 
             MethodHandle mh;
 
@@ -126,19 +129,7 @@ public class VMMethodInsnNode extends VMNode
         }
         else
         {
-//            System.out.println();
-//            System.out.println("VMMethodInsnNode");
-//            System.out.println("invokeType: " + invokeType);
-//            System.out.println("clazz: " + clazz);
-//            System.out.println("name: " + name);
-//            System.out.println("args: " + Arrays.toString(argumentTypes));
-//            System.out.println("objects: " + Arrays.toString(objects));
-//            System.out.println("returnType: " + returnType);
-//            System.out.println("stack: " + stack);
-
             Object ref = stack.pop();
-
-//            System.out.println("ref: " + ref);
 
             Constructor<?> constructor = vm.getConstructor(clazz, argumentTypes);
 //            Object invoke = constructor.newInstance(objects);
