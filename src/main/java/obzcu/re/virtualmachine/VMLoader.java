@@ -214,7 +214,20 @@ public class VMLoader
                 inputs.add(args);
                 yield true;
             }
-            case "Runnable", "Consumer", "Function", "Predicate" -> {
+            case
+                "Runnable",
+
+                // Comsumers
+                "Consumer",
+                "IntConsumer",
+                "LongConsumer",
+                "DoubleConsumer",
+
+                // Others
+                "Function",
+                "Predicate",
+                "Supplier"
+            -> {
                 inputs.add(which);
                 inputs.add(dis.readInt()); // tag
                 inputs.add(dis.readUTF()); // owner

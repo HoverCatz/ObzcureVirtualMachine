@@ -50,27 +50,27 @@ public class VMInsnNode extends VMNode
             case DCONST_1 -> stack.push(1D);
 
             case IALOAD -> {
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 stack.push(Array.getInt(arrayRef, index));
             }
             case LALOAD -> {
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 stack.push(Array.getLong(arrayRef, index));
             }
             case FALOAD ->  {
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 stack.push(Array.getFloat(arrayRef, index));
             }
             case DALOAD -> {
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 stack.push(Array.getDouble(arrayRef, index));
             }
             case AALOAD -> {
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
 //                System.out.println("arrayRef: " + arrayRef);
 //                System.out.println("index: " + index);
@@ -87,66 +87,66 @@ public class VMInsnNode extends VMNode
                 stack.push(Array.get(arrayRef, index));
             }
             case BALOAD -> {
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 stack.push(Array.getByte(arrayRef, index));
             }
             case CALOAD -> {
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 stack.push(Array.getChar(arrayRef, index));
             }
             case SALOAD -> {
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 stack.push(Array.getShort(arrayRef, index));
             }
 
             case IASTORE -> {
-                int value = stack.popInt(vm);
-                int index = stack.popInt(vm);
+                int value = stack.popInt();
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 Array.setInt(arrayRef, index, value);
             }
             case LASTORE -> {
-                long value = stack.popLong(vm);
-                int index = stack.popInt(vm);
+                long value = stack.popLong();
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 Array.setLong(arrayRef, index, value);
             }
             case FASTORE -> {
-                float value = stack.popFloat(vm);
-                int index = stack.popInt(vm);
+                float value = stack.popFloat();
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 Array.setFloat(arrayRef, index, value);
             }
             case DASTORE -> {
-                double value = stack.popDouble(vm);
-                int index = stack.popInt(vm);
+                double value = stack.popDouble();
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 Array.setDouble(arrayRef, index, value);
             }
             case AASTORE -> {
                 Object value = stack.pop();
-                int index = stack.popInt(vm);
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 Array.set(arrayRef, index, value);
             }
             case BASTORE -> {
-                byte value = stack.popByte(vm);
-                int index = stack.popInt(vm);
+                byte value = stack.popByte();
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 Array.setByte(arrayRef, index, value);
             }
             case CASTORE -> {
-                char value = stack.popChar(vm);
-                int index = stack.popInt(vm);
+                char value = stack.popChar();
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 Array.setChar(arrayRef, index, value);
             }
             case SASTORE -> {
-                short value = stack.popShort(vm);
-                int index = stack.popInt(vm);
+                short value = stack.popShort();
+                int index = stack.popInt();
                 Object arrayRef = stack.pop();
                 Array.setShort(arrayRef, index, value);
             }

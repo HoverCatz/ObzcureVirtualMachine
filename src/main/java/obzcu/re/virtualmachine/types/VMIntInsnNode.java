@@ -34,7 +34,7 @@ public class VMIntInsnNode extends VMNode
         else
         if (opcode == NEWARRAY)
         {
-            int count = stack.popInt(vm);
+            int count = stack.popInt();
             Class<?> arrayType = switch (getNextInt())
             {
                 case T_BOOLEAN -> Boolean.TYPE;

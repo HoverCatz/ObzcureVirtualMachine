@@ -106,7 +106,9 @@ public class VMTests
         assertNotNull(result);
         assertNotEquals(0, result.length);
 
-        Files.write(new File("src/test/java/obzcu/re/vm/tests/tests/classBytes",
+        File classBytesFolder = new File("src/test/java/obzcu/re/vm/tests/tests/classBytes");
+        if (!classBytesFolder.exists()) classBytesFolder.mkdirs();
+        Files.write(new File(classBytesFolder,
                 owner.replace("/", ".") + "_" + name + ".result").toPath(), result);
 
         return result;
@@ -158,7 +160,9 @@ public class VMTests
         byte[] classBytes = writer.toByteArray();
         assertNotEquals(0, classBytes.length);
 
-        Files.write(new File("src/test/java/obzcu/re/vm/tests/tests/classBytes",
+        File classBytesFolder = new File("src/test/java/obzcu/re/vm/tests/tests/classBytes");
+        if (!classBytesFolder.exists()) classBytesFolder.mkdirs();
+        Files.write(new File(classBytesFolder,
                 owner.replace("/", ".") + "_" + name + ".class").toPath(), classBytes);
 
         class CustomClassLoader extends ClassLoader
@@ -262,6 +266,11 @@ public class VMTests
 
     public static File processJar(Class<?> clazz, String pkg, boolean translate)
     {
+        return processJar(clazz, pkg, translate, false, false);
+    }
+
+    public static File processJar(Class<?> clazz, String pkg, boolean translate, boolean fp, boolean rf)
+    {
         File tempFile = assertDoesNotThrow(() ->
         {
             String mainClass = clazz.getName();
@@ -299,7 +308,7 @@ public class VMTests
                     String entryName = name.substring(name.indexOf("test-classes") + 13).replace("\\", "/");
                     if (translate)
                     {
-                        ObzcureVM.Duo<Boolean, byte[]> result = translateClass(bytes, translatedMethods, resourceIndex);
+                        ObzcureVM.Duo<Boolean, byte[]> result = translateClass(bytes, translatedMethods, resourceIndex, fp, rf);
                         if (result.a)
                             bytes = result.b;
                     }
@@ -358,6 +367,11 @@ public class VMTests
 
     private static ObzcureVM.Duo<Boolean, byte[]> translateClass(byte[] bytes, Map<Integer, byte[]> translatedMethods, AtomicInteger resourceIndex)
     {
+        return translateClass(bytes, translatedMethods, resourceIndex, false, false);
+    }
+
+    private static ObzcureVM.Duo<Boolean, byte[]> translateClass(byte[] bytes, Map<Integer, byte[]> translatedMethods, AtomicInteger resourceIndex, boolean fp, boolean rf)
+    {
         AtomicBoolean success = new AtomicBoolean(false);
 
         ClassNode node = new ClassNode();
@@ -367,7 +381,7 @@ public class VMTests
         ClassWrapper wrapper = new ClassWrapper(null, node);
         wrapper.getMethods().forEach(m ->
         {
-            Translator translator = new Translator(wrapper, m, null, false, false, true);
+            Translator translator = new Translator(wrapper, m, null, fp, rf, true);
             if (translator.translateInstructions(resourceIndex.get()))
             {
                 translatedMethods.put(resourceIndex.getAndIncrement(), translator.getResult());
@@ -377,6 +391,33 @@ public class VMTests
 
         if (success.get())
             Translator.injectLookupField(wrapper, wrapper.getOrCreateClinit());
+
+        // Remove final access from every field and method.
+        // This opens up for virtualization of more methods.
+        if (rf)
+        {
+            AccessHelper classAccess = wrapper.getAccess();
+            // The Java spec allows only final static fields in interfaces, but this field/method is not final.
+            if (!classAccess.isInterface())
+            {
+                wrapper.getFields().forEach(f -> {
+                    AccessHelper access = f.getAccess();
+                    if (access.isFinal())
+                    {
+                        access.removeAccess(Opcodes.ACC_FINAL);
+                        access.sync(f);
+                    }
+                });
+                wrapper.getMethods().forEach(m -> {
+                    AccessHelper access = m.getAccess();
+                    if (access.isFinal())
+                    {
+                        access.removeAccess(Opcodes.ACC_FINAL);
+                        access.sync(m);
+                    }
+                });
+            }
+        }
 
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         node.accept(writer);
@@ -453,7 +494,8 @@ public class VMTests
             if (inLine.contains("<init>")) inLine = removeLineNumber(inLine);
             inList.add(inLine);
         }
-        assertEquals(inList.size(), outList.size());
+        if (inList.size() != outList.size())
+            assertEquals(String.join("\n", inList), String.join("\n", outList));
         for (int i = 0; i < inList.size(); i++)
         {
             String inLine = inList.get(i);

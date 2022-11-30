@@ -1,6 +1,7 @@
 package obzcu.re.vm.tests.tests.custom;
 
 import obzcu.re.virtualmachine.ObzcureVM;
+import obzcu.re.vm.tests.tests.custom.dev.sim0n.evaluator.Main;
 import obzcu.re.vm.tests.tests.custom.testjar.MainTest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -32,7 +33,6 @@ public class Test_CustomJars
     @Order(1)
     public void VERSION()
     {
-
         ObzcureVM.Duo<String, String> output = assertDoesNotThrow(() ->
         {
             File javaExecutable = getJavaExecutable();
@@ -65,10 +65,13 @@ public class Test_CustomJars
         System.out.println("BEFORE TRANSLATION (ORIGINAL): ");
         // BEFORE TRANSLATION
         File tempFile = processJar(MainTest.class, "/obzcu/re/vm/tests/tests/custom/testjar/", false);
-        File finalTempFile = tempFile;
-        assertDoesNotThrow(() -> Files.copy(finalTempFile.toPath(), new File("src/test/java/obzcu/re/vm/tests/tests/jarfiles/testjar-before.jar").toPath(), StandardCopyOption.REPLACE_EXISTING));
+        assertDoesNotThrow(() -> {
+            File folder = new File("src/test/java/obzcu/re/vm/tests/tests/jarfiles/");
+            if (!folder.exists()) folder.mkdirs();
+            Files.copy(tempFile.toPath(), new File(folder, "testjar-before.jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
+        });
 
-        ObzcureVM.Duo<String, String> output = assertDoesNotThrow(() -> executeJar(finalTempFile));
+        ObzcureVM.Duo<String, String> output = assertDoesNotThrow(() -> executeJar(tempFile));
         print("Output", output.a);
         System.out.println();
         error("Error", output.b);
@@ -76,11 +79,56 @@ public class Test_CustomJars
 
         System.out.println("AFTER TRANSLATION (VM OUTPUT):");
         // AFTER TRANSLATION
-        tempFile = processJar(MainTest.class, "/obzcu/re/vm/tests/tests/custom/testjar/", true);
-        File finalTempFile1 = tempFile;
-        assertDoesNotThrow(() -> Files.copy(finalTempFile1.toPath(), new File("src/test/java/obzcu/re/vm/tests/tests/jarfiles/testjar-after.jar").toPath(), StandardCopyOption.REPLACE_EXISTING));
+        File tempFile2 = processJar(MainTest.class, "/obzcu/re/vm/tests/tests/custom/testjar/", true);
+        assertDoesNotThrow(() -> {
+            File folder = new File("src/test/java/obzcu/re/vm/tests/tests/jarfiles/");
+            if (!folder.exists()) folder.mkdirs();
+            Files.copy(tempFile2.toPath(), new File(folder, "testjar-after.jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
+        });
 
-        ObzcureVM.Duo<String, String> output2 = assertDoesNotThrow(() -> executeJar(finalTempFile1));
+        ObzcureVM.Duo<String, String> output2 = assertDoesNotThrow(() -> executeJar(tempFile2));
+        ObzcureVM.Duo<String, String> duo = fixVMExceptions(output.b, output2.b);
+        print("Output", output2.a);
+        System.out.println();
+        error("Error (vm errors)", output2.b);
+        output2.b = duo.b;
+        error("Error (fixed)", output2.b);
+        System.out.println();
+
+        assertEquals(duo.a, output2.b); // Test errors first
+        assertEquals(output.a, output2.a); // Then test output
+    }
+
+    @Test
+    @Order(3)
+    /* https://github.com/terminalsin/Evaluator */
+    public void TESTJAR_Evaluator()
+    {
+        System.out.println("BEFORE TRANSLATION (ORIGINAL): ");
+        // BEFORE TRANSLATION
+        File tempFile = processJar(Main.class, "/obzcu/re/vm/tests/tests/custom/dev/sim0n/evaluator/", false);
+        assertDoesNotThrow(() -> {
+            File folder = new File("src/test/java/obzcu/re/vm/tests/tests/jarfiles/");
+            if (!folder.exists()) folder.mkdirs();
+            Files.copy(tempFile.toPath(), new File(folder, "evaluator-before.jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
+        });
+
+        ObzcureVM.Duo<String, String> output = assertDoesNotThrow(() -> executeJar(tempFile));
+        print("Output", output.a);
+        System.out.println();
+        error("Error", output.b);
+        System.out.println("\n\n\n");
+
+        System.out.println("AFTER TRANSLATION (VM OUTPUT):");
+        // AFTER TRANSLATION
+        File tempFile2 = processJar(Main.class, "/obzcu/re/vm/tests/tests/custom/dev/sim0n/evaluator/", true, true, true);
+        assertDoesNotThrow(() -> {
+            File folder = new File("src/test/java/obzcu/re/vm/tests/tests/jarfiles/");
+            if (!folder.exists()) folder.mkdirs();
+            Files.copy(tempFile2.toPath(), new File(folder, "evaluator-after.jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
+        });
+
+        ObzcureVM.Duo<String, String> output2 = assertDoesNotThrow(() -> executeJar(tempFile2));
         ObzcureVM.Duo<String, String> duo = fixVMExceptions(output.b, output2.b);
         print("Output", output2.a);
         System.out.println();

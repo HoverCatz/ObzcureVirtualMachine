@@ -26,7 +26,7 @@ public class VMTypeInsnNode extends VMNode
         switch (opcode)
         {
             case NEW -> stack.push(vm.getClass(getNextString()));
-            case ANEWARRAY -> stack.push(Array.newInstance(vm.getClass(getNextString()), stack.popInt(vm)));
+            case ANEWARRAY -> stack.push(Array.newInstance(vm.getClass(getNextString()), stack.popInt()));
             case CHECKCAST -> {
                 Object obj = stack.pop();
                 Class<?> argumentClazz = vm.getClass(getNextString());

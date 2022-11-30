@@ -11,10 +11,12 @@ import java.util.Stack;
 public class VMStack extends Stack<Object>
 {
 
+    private ObzcureVM vm;
     private final int maxStack;
 
-    public VMStack(int maxStack)
+    public VMStack(ObzcureVM vm, int maxStack)
     {
+        this.vm = vm;
         this.maxStack = maxStack;
     }
 
@@ -50,43 +52,43 @@ public class VMStack extends Stack<Object>
         return Arrays.toString(objects);
     }
 
-    public int popInt(ObzcureVM vm)
+    public int popInt()
     {
         Object pop = pop();
         return (int) vm.cast(pop, pop.getClass(), Integer.TYPE);
     }
 
-    public byte popByte(ObzcureVM vm)
+    public byte popByte()
     {
         Object pop = pop();
         return (byte) vm.cast(pop, pop.getClass(), Byte.TYPE);
     }
 
-    public char popChar(ObzcureVM vm)
+    public char popChar()
     {
         Object pop = pop();
         return (char) vm.cast(pop, pop.getClass(), Character.TYPE);
     }
 
-    public short popShort(ObzcureVM vm)
+    public short popShort()
     {
         Object pop = pop();
         return (short) vm.cast(pop, pop.getClass(), Short.TYPE);
     }
 
-    public double popDouble(ObzcureVM vm)
+    public double popDouble()
     {
         Object pop = pop();
         return (double) vm.cast(pop, pop.getClass(), Double.TYPE);
     }
 
-    public float popFloat(ObzcureVM vm)
+    public float popFloat()
     {
         Object pop = pop();
         return (float) vm.cast(pop, pop.getClass(), Float.TYPE);
     }
 
-    public long popLong(ObzcureVM vm)
+    public long popLong()
     {
         Object pop = pop();
         return (long) vm.cast(pop, pop.getClass(), Long.TYPE);

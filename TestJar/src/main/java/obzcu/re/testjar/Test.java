@@ -1,24 +1,9 @@
 package obzcu.re.testjar;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.lang.instrument.Instrumentation;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.security.ProtectionDomain;
+import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -98,6 +83,11 @@ public class Test
         return 1337;
     }
 
+    static String testVarargs(String format, String... args)
+    {
+        return new Formatter().format(format, args).toString();
+    }
+
     public static void main(String[] args) throws Throwable
     {
 
@@ -111,11 +101,43 @@ public class Test
         // TODO: Unsupported returnType: Z
         //       Error: Invokedynamic instruction has unsupported arguments in: obzcu/re/testjar/Test$TestLineNumberNode equals(Ljava/lang/Object;)Z
 
-        Test t = new Test(getTestInt(), 2D);
-        System.out.println(k);
+        System.out.println(String.format("Today's date is %s", LocalDate.now()));
 
-        new SecondClass(t, getTestInt(), 2D);
-
+//        AbsClass absClass = new SecondClass(new Test());
+//        System.out.println(((SecondClass) absClass).testBoolean());
+//
+//        System.out.println(testVarargs("Test %s", "string"));
+//
+//        Consumer<Object> objectConsumer = o -> System.out.println(o);
+//        objectConsumer.accept("Hello world");
+//
+//        Consumer<Object> objectConsumer2 = System.out::println;
+//        objectConsumer2.accept("Hello world 2");
+//
+//        IntStream intStream = IntStream.range(1, 10);
+//        intStream.forEach(System.out::print);
+//        IntStream.range(1, 10).forEach(i -> System.out.print(i));
+//
+//        System.out.println();
+//
+//        LongStream longStream = LongStream.range(1, 10);
+//        longStream.forEach(System.out::print);
+//        LongStream.range(1, 10).forEach(l -> System.out.print(l));
+//
+//        System.out.println();
+//
+//        DoubleStream doubleStream = IntStream.range(1, 10).asDoubleStream();
+//        doubleStream.forEach(System.out::print);
+//        IntStream.range(1, 10).asDoubleStream().forEach(i -> System.out.print(i));
+//
+//        Supplier<String> s = () -> "Hello world";
+//        System.out.println(s.get());
+//
+//        Test t = new Test(getTestInt(), 2D);
+//        System.out.println(k);
+//
+//        new SecondClass(t, getTestInt(), 2D);
+//
 //        Test t = new Test();
 //
 //        Thread test = new Thread(t::testVirtualThread);

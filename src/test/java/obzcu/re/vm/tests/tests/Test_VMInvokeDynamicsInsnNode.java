@@ -13,6 +13,9 @@ import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import static obzcu.re.vm.tests.VMTests.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -248,8 +251,8 @@ public class Test_VMInvokeDynamicsInsnNode
         assertDoesNotThrow(vm::execute);
         assertEquals(1, vm.stackSize());
         Object pop = vm.pop();
-        assertInstanceOf(VMConsumer.class, pop);
-        ((VMConsumer)pop).accept("Hello");
+        assertTrue(pop instanceof Consumer);
+        ((Consumer<String>)pop).accept("Hello");
         assertEquals("Hello!", testConsumerString);
         assertEquals(0, vm.stackSize());
     }
@@ -350,6 +353,22 @@ public class Test_VMInvokeDynamicsInsnNode
             r2.run();
         };
         test5.accept(test4);
+
+        IntStream intStream = IntStream.range(1, 10);
+        intStream.forEach(System.out::print);
+        IntStream.range(1, 10).forEach(i -> System.out.print(i));
+
+        System.out.println();
+
+        LongStream longStream = LongStream.range(1, 10);
+        longStream.forEach(System.out::print);
+        LongStream.range(1, 10).forEach(l -> System.out.print(l));
+
+        System.out.println();
+
+        DoubleStream doubleStream = IntStream.range(1, 10).asDoubleStream();
+        doubleStream.forEach(System.out::print);
+        IntStream.range(1, 10).asDoubleStream().forEach(i -> System.out.print(i));
 
     }
 

@@ -21,7 +21,7 @@ public class VMLookupSwitchInsnNode extends VMNode
     {
         super.execute(vm, stack);
 
-        int hashCode = stack.popInt(vm);
+        int hashCode = stack.popInt();
 
         int defaultIndex = getNextInt();
         int[] keys = (int[]) getNext();

@@ -1,0 +1,69 @@
+
+Today's date is 2022-11-30
+Performing small int test...10 / 18 = 0
+6 + 15 = 21
+6 - 12 = -6
+1 % 2 = 1
+19 ^ 15 = 28
+10 / 1 = 10
+17 / 9 = 1
+1 % 17 = 1
+18 ^ 3 = 17
+10 + 6 = 16
+16 ^ 7 = 23
+16 * 5 = 80
+16 / 3 = 5
+17 * 20 = 340
+3 + 9 = 12
+
+Performing random math operations...Performing double test 0. Operation name is %
+1.9817656768587806 % 9.79012425459241 = 1.9817656768587806
+Performing int test 1. Operation name is %
+398 % 51 = 41
+Performing double test 2. Operation name is %
+3.535287429360438 % 0.21480131492236743 = 0.09846639060255935
+Performing double test 3. Operation name is %
+0.2805255257633217 % 0.0 = NaN
+Performing double test 4. Operation name is %
+15.354279285687706 % 11.312333434915566 = 4.041945850772141
+Performing double test 5. Operation name is +
+3.535287429360438 + 2.422188626186955 = 5.957476055547393
+Performing int test 6. Operation name is ^
+74 ^ 259 = 329
+Performing double test 7. Operation name is /
+2.158320252411026 / 1.9817656768587806 = 1.0890895314284055
+Performing double test 8. Operation name is /
+5.932633085882487 / 2.422188626186955 = 2.44928616282941
+Performing int test 9. Operation name is ^
+636 ^ 892 = 256
+Performing int test 10. Operation name is ^
+923 ^ 432 = 555
+Performing double test 11. Operation name is +
+10.807260410843776 + 2.422188626186955 = 13.229449037030731
+Performing int test 12. Operation name is -
+774 - 432 = 342
+Performing int test 13. Operation name is /
+892 / 74 = 12
+Performing int test 14. Operation name is *
+600 * 636 = 381600
+Performing int test 15. Operation name is ^
+259 ^ 275 = 16
+Performing double test 16. Operation name is /
+4.220760053178631 / 2.158320252411026 = 1.9555763554846344
+Performing int test 17. Operation name is ^
+923 ^ 693 = 302
+Performing int test 18. Operation name is ^
+957 ^ 957 = 0
+Performing int test 19. Operation name is *
+409 * 409 = 167281
+Performing int test 20. Operation name is ^
+275 ^ 892 = 623
+
+Computing statistics
+Averages for (i, d): 20440.962962962964, NaN
+Loaded 2 tests
+Testing annotations
+Test, 0.36, 36
+Testing cryptography (Blowfish)
+Successfully compared strings
+Successfully decrypted hello world 123 1605479835458
