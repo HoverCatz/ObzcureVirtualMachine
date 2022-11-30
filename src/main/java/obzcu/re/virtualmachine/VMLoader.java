@@ -157,7 +157,7 @@ public class VMLoader
                     VMInvokeDynamicInsnNode node = new VMInvokeDynamicInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     List<Object> inputs = new ArrayList<>();
-                    if (!readInvokeDynamics(dis, node, inputs))
+                    if (!readInvokeDynamics(dis, inputs))
                         throw new IllegalStateException("Unsupported invokedynamics instruction reached.");
                     setInput(vm, node, inputs.toArray(new Object[0]));
                     nodes.add(node);
@@ -199,7 +199,7 @@ public class VMLoader
         return nodes.toArray(new VMNode[0]);
     }
 
-    private static boolean readInvokeDynamics(DataInputStream dis, VMInvokeDynamicInsnNode node, List<Object> inputs) throws Throwable
+    private static boolean readInvokeDynamics(DataInputStream dis, List<Object> inputs) throws Throwable
     {
         String which = dis.readUTF(); // which
         return switch (which)
@@ -233,6 +233,7 @@ public class VMLoader
             }
             default -> false;
         };
+
     }
 
     private static void setInput(ObzcureVM vm, VMNode vmNode, Object... obj)
