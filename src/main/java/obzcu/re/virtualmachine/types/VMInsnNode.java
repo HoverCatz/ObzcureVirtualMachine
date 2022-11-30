@@ -199,10 +199,10 @@ public class VMInsnNode extends VMNode
                 else
                 {
                     Object value2 = stack.pop();
-                    stack.push(value);
                     stack.push(value2);
                     stack.push(value);
                     stack.push(value2);
+                    stack.push(value);
                 }
             }
             case DUP2_X1 -> {
