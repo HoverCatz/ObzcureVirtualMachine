@@ -319,7 +319,7 @@ public final class ObzcureVM
         if (classCache.containsKey(name))
             return classCache.get(name);
 
-        Class<?> clazz = Class.forName(name);
+        Class<?> clazz = Class.forName(name.replace("/", "."));
         classCache.put(name, clazz);
         return clazz;
     }
@@ -425,7 +425,7 @@ public final class ObzcureVM
     }
 
     private static final Map<String, Method> methodCache = new HashMap<>();
-    public Method getMethod(Class<?> clazz, String name, Class<?>[] argumentTypes) throws Throwable
+    public Method getMethod(Class<?> clazz, String name, Class<?>... argumentTypes) throws Throwable
     {
         String key = clazz.getName() + "." + name + "." + Arrays.toString(argumentTypes);
         if (methodCache.containsKey(key))

@@ -154,26 +154,18 @@ public class VMInsnNode extends VMNode
             case POP -> stack.pop();
             case POP2 ->
             {
-                stack.pop();
-                if (!stack.isEmpty()) // FIX FOR DOUBLE/LONG DOUBLE POP?
+                Object value = stack.pop();
+                if (!(value instanceof Long || value instanceof Double))
                     stack.pop();
             }
             case DUP -> {
                 Object value = stack.pop();
                 stack.push(value);
                 stack.push(value);
-//                if (!stack.isEmpty())
-//                {
-//                    Object peek = stack.peek();
-////                  if (vm.getPreviousNode().opcode != VMOpcodes.NEW)
-//                    stack.push(peek);
-//                }
             }
             case DUP_X1 -> {
                 Object value = stack.pop();
                 Object value2 = stack.pop();
-//                assertTypeNot(value2, 2, Double.class, Long.class);
-//                assertTypeNot(value, 1, Double.class, Long.class);
                 stack.push(value);
                 stack.push(value2);
                 stack.push(value);
@@ -181,128 +173,91 @@ public class VMInsnNode extends VMNode
             case DUP_X2 -> {
                 Object value = stack.pop();
                 Object value2 = stack.pop();
-                Object value3 = stack.pop();
-//                assertTypeNot(value3, 3, Double.class, Long.class);
-//                assertTypeNot(value2, 2, Double.class, Long.class);
-//                assertTypeNot(value, 1, Double.class, Long.class);
-                stack.push(value);
-                stack.push(value3);
-                stack.push(value2);
-                stack.push(value);
-//                if (!(value instanceof Double || value instanceof Long) && value2 instanceof Double || value2 instanceof Long)
-//                {
-//                    // Form 2
-//                    stack.push(value);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                }
-//                else
-//                {
-//                    // Form 1
-//                    Object value3 = stack.pop();
-//                    stack.push(value);
-//                    stack.push(value3);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                }
+                if (vm.isWide(value2)) {
+                    stack.push(value);
+                    stack.push(value2);
+                    stack.push(value);
+                } else {
+                    Object value3 = stack.pop();
+                    stack.push(value);
+                    stack.push(value3);
+                    stack.push(value2);
+                    stack.push(value);
+                }
             }
             case DUP2 -> {
                 Object value = stack.pop();
-                Object value2 = stack.pop();
-                stack.push(value2);
-                stack.push(value);
-                stack.push(value2);
-                stack.push(value);
-//                if (value instanceof Double || value instanceof Long)
-//                {
-//                    stack.push(value);
-//                    stack.push(value);
-//                }
-//                else
-//                {
-//                    Object value2 = stack.pop();
-//                    stack.push(value);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                    stack.push(value2);
-//                }
+                if (value instanceof Double || value instanceof Long)
+                {
+                    stack.push(value);
+                    stack.push(value);
+                }
+                else
+                {
+                    Object value2 = stack.pop();
+                    stack.push(value2);
+                    stack.push(value);
+                    stack.push(value2);
+                    stack.push(value);
+                }
             }
             case DUP2_X1 -> {
                 Object value = stack.pop();
                 Object value2 = stack.pop();
-                Object value3 = stack.pop();
-                stack.push(value2);
-                stack.push(value);
-                stack.push(value3);
-                stack.push(value2);
-                stack.push(value);
-//                if ((value instanceof Double || value instanceof Long) && (value2 instanceof Double || value2 instanceof Long) && (value3 instanceof Double || value3 instanceof Long))
-//                {
-//                    stack.push(value);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                }
-//                else
-//                {
-//                    stack.push(value2);
-//                    stack.push(value);
-//                    stack.push(value3);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                }
+                if (vm.isWide(value)) {
+                    stack.push(value);
+                    stack.push(value2);
+                    stack.push(value);
+                }
+                else
+                {
+                    Object value3 = stack.pop();
+                    stack.push(value2);
+                    stack.push(value);
+                    stack.push(value3);
+                    stack.push(value2);
+                    stack.push(value);
+                }
             }
             case DUP2_X2 -> {
                 Object value = stack.pop();
                 Object value2 = stack.pop();
-                Object value3 = stack.pop();
-                Object value4 = stack.pop();
-                stack.push(value2);
-                stack.push(value);
-                stack.push(value4);
-                stack.push(value3);
-                stack.push(value2);
-                stack.push(value);
-//                boolean value1_2bytes = (value instanceof Double || value instanceof Long);
-//                boolean value2_2bytes = (value2 instanceof Double || value2 instanceof Long);
-//                boolean value3_2bytes = (value3 instanceof Double || value3 instanceof Long);
-//                boolean value4_2bytes = (value4 instanceof Double || value4 instanceof Long);
-//                if (!value1_2bytes && !value2_2bytes && !value3_2bytes && !value4_2bytes)
-//                {
-//                    // Form 1
-//                    stack.push(value2);
-//                    stack.push(value);
-//                    stack.push(value4);
-//                    stack.push(value3);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                }
-//                else
-//                if (value1_2bytes && value2_2bytes && !value3_2bytes)
-//                {
-//                    // Form 2
-//                    stack.push(value);
-//                    stack.push(value3);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                }
-//                else
-//                if (!value1_2bytes && !value2_2bytes && value3_2bytes)
-//                {
-//                    // Form 3
-//                    stack.push(value2);
-//                    stack.push(value);
-//                    stack.push(value3);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                }
-//                else
-//                if (value1_2bytes && value2_2bytes)
-//                {
-//                    // Form 4
-//                    stack.push(value);
-//                    stack.push(value2);
-//                    stack.push(value);
-//                }
+                if (vm.isWide(value)) {
+                    if (vm.isWide(value2)) {
+                        stack.push(value);
+                        stack.push(value2);
+                        stack.push(value);
+                    }
+                    else
+                    {
+                        Object value3 = stack.pop();
+                        stack.push(value);
+                        stack.push(value3);
+                        stack.push(value2);
+                        stack.push(value);
+                    }
+                }
+                else
+                {
+                    Object value3 = stack.pop();
+                    if (vm.isWide(value3)) {
+                        stack.push(value2);
+                        stack.push(value);
+                        stack.push(value3);
+                        stack.push(value2);
+                        stack.push(value);
+                    }
+                    else
+                    {
+                        Object value4 = stack.pop();
+                        stack.push(value2);
+                        stack.push(value);
+                        stack.push(value4);
+                        stack.push(value3);
+                        stack.push(value2);
+                        stack.push(value);
+                    }
+                }
             }
             case SWAP -> {
                 Object value = stack.pop();
