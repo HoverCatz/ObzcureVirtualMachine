@@ -24,11 +24,10 @@ Usage:
 ```
 
 ### Before
-![Before vm](https://cdn.discordapp.com/attachments/399714742765092864/932573252071620648/unknown.png)
-
+![image](https://github.com/HoverCatz/ObzcureVirtualMachine/assets/1442391/af5419d7-a4fb-48c0-9c64-70c35c1c8e2a)
 
 ### After
-![After vm](https://cdn.discordapp.com/attachments/399714742765092864/932573279418454016/unknown.png)
+![image](https://github.com/HoverCatz/ObzcureVirtualMachine/assets/1442391/137620a2-ca72-4a99-b253-896134f57d77)
 
 ## Example timings:
 Virtualized output file:
