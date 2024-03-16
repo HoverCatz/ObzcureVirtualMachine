@@ -27,7 +27,10 @@ public class SecondClass extends AbsClass
         return 1;
     }
 
+    public @interface ApplyObzcureVM { }
+
     @Override
+    @ApplyObzcureVM
     public void testMethod()
     {
         super.testMethod();

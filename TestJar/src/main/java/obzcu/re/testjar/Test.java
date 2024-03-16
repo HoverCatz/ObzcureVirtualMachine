@@ -156,11 +156,11 @@ public class Test
 //        Runnable test4 = t::testVirtualRunnable;
 //        test4.run();
 
-//        Test test = new Test();
-//
-//        testPrivateMethod();
-//
-//        new SecondClass(test).testMethod();
+        Test test = new Test();
+
+        testPrivateMethod();
+
+        new SecondClass(test).testMethod();
 //
 //        test.publicField = true;
 //        test.privateField = false;

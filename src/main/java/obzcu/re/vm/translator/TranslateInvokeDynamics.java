@@ -18,12 +18,33 @@ import java.util.Map;
  * @created 16.01.2022
  * @url https://github.com/HoverCatz
  **/
-public record TranslateInvokeDynamics(ClassWrapper node,
-                                      AccessHelper classAccess,
-                                      MethodWrapper method,
-                                      AccessHelper methodAccess, DataOutputStream writer, boolean debug,
-                                      boolean debugPrettyPrint, boolean doStackAnalyze)
+public class TranslateInvokeDynamics
 {
+
+    private final ClassWrapper node;
+    private final AccessHelper classAccess;
+    private final MethodWrapper method;
+    private final AccessHelper methodAccess;
+    private final DataOutputStream writer;
+    private final boolean debug;
+    private final boolean debugPrettyPrint;
+    private final boolean doStackAnalyze;
+
+    public TranslateInvokeDynamics(ClassWrapper node,
+                                   AccessHelper classAccess,
+                                   MethodWrapper method,
+                                   AccessHelper methodAccess, DataOutputStream writer, boolean debug,
+                                   boolean debugPrettyPrint, boolean doStackAnalyze) {
+
+        this.node = node;
+        this.classAccess = classAccess;
+        this.method = method;
+        this.methodAccess = methodAccess;
+        this.writer = writer;
+        this.debug = debug;
+        this.debugPrettyPrint = debugPrettyPrint;
+        this.doStackAnalyze = doStackAnalyze;
+    }
 
     public boolean translate(InvokeDynamicInsnNode idin) throws Throwable
     {
@@ -33,28 +54,28 @@ public record TranslateInvokeDynamics(ClassWrapper node,
             return false;
 
         Type returnType = Type.getReturnType(idin.desc);
-        return switch (returnType.getInternalName())
+        switch (returnType.getInternalName())
         {
-            case "java/lang/Runnable" -> inject(idin, "Runnable");
+            case "java/lang/Runnable": return inject(idin, "Runnable");
 
             // Consumers
-            case "java/util/function/Consumer" -> inject(idin, "Consumer");
-            case "java/util/function/IntConsumer" -> inject(idin, "IntConsumer");
-            case "java/util/function/LongConsumer" -> inject(idin, "LongConsumer");
-            case "java/util/function/DoubleConsumer" -> inject(idin, "DoubleConsumer");
+            case "java/util/function/Consumer": return inject(idin, "Consumer");
+            case "java/util/function/IntConsumer": return inject(idin, "IntConsumer");
+            case "java/util/function/LongConsumer": return inject(idin, "LongConsumer");
+            case "java/util/function/DoubleConsumer": return inject(idin, "DoubleConsumer");
 
             // Others
-            case "java/util/function/Function" -> inject(idin, "Function");
-            case "java/util/function/Predicate" -> inject(idin, "Predicate");
-            case "java/util/function/Supplier" -> inject(idin, "Supplier");
+            case "java/util/function/Function": return inject(idin, "Function");
+            case "java/util/function/Predicate": return inject(idin, "Predicate");
+            case "java/util/function/Supplier": return inject(idin, "Supplier");
             // TODO: Implement support for every single class inside the package `java.util.function`
 
-            case "java/lang/String" -> injectStringConcat(idin);
-            default -> {
+            case "java/lang/String": return injectStringConcat(idin);
+            default: {
                 System.out.println("Unsupported returnType: " + returnType.getInternalName());
-                yield false;
+                return false;
             }
-        };
+        }
     }
 
     private boolean injectStringConcat(InvokeDynamicInsnNode idin) throws Throwable
@@ -218,11 +239,12 @@ public record TranslateInvokeDynamics(ClassWrapper node,
         Object bsmArg1 = bsmArgs[1];
 
         // Filter arg1 type
-        if (!(bsmArg1 instanceof Handle handle))
+        if (!(bsmArg1 instanceof Handle))
         {
             if (debug) System.out.println("Failed bsmArg1 handle check");
             return false;
         }
+        Handle handle = (Handle) bsmArg1;
 
         // Filter handle tag
         // (5 = H_INVOKEVIRTUAL)

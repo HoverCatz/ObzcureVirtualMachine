@@ -143,9 +143,12 @@ public class Translator implements Opcodes
 
         if (!removeFinal || classAccess.isInterface())
             for (AbstractInsnNode insn : insnList.toArray())
-                if (insn instanceof FieldInsnNode field)
+                if (insn instanceof FieldInsnNode)
+                {
+                    FieldInsnNode field = (FieldInsnNode) insn;
                     if (field.getOpcode() == Opcodes.PUTFIELD || field.getOpcode() == Opcodes.PUTSTATIC)
                         assertFieldNotFinal(field);
+                }
 
         // Pretty-print function
         if (debugPrettyPrint)
@@ -170,8 +173,9 @@ public class Translator implements Opcodes
             if (!hasReachedSupercall)
             {
                 constructorInsnList.add(insn);
-                if (insn instanceof MethodInsnNode invoke)
+                if (insn instanceof MethodInsnNode)
                 {
+                    MethodInsnNode invoke = (MethodInsnNode) insn;
                     if (invoke.owner.equals(superClass) && invoke.name.equals("<init>") && invoke.desc.endsWith(")V"))
                     {
                         if (debug) System.out.println("VMIgnore (constructor superCall reached)");
@@ -190,237 +194,241 @@ public class Translator implements Opcodes
                     continue;
                 }
             }
-            switch (insn)
-            {
-                case LabelNode labelNode -> {
-                    if (debug) System.out.println("VMLabelInsnNode: " + opcode);
-                    writer.writeUTF("VMLabelInsnNode");
-                    writer.writeInt(opcode);
+            if (insn instanceof LabelNode) {
+                if (debug) System.out.println("VMLabelInsnNode: " + opcode);
+                writer.writeUTF("VMLabelInsnNode");
+                writer.writeInt(opcode);
 
-                    writer.writeInt(index);
-                    if (debug) System.out.println("index: " + index);
+                writer.writeInt(index);
+                if (debug) System.out.println("index: " + index);
+            } else if (insn instanceof LineNumberNode) {
+                LineNumberNode lineNumberNode = (LineNumberNode) insn;
+
+                if (debug) System.out.println("VMLineNumberInsnNode: " + opcode);
+                writer.writeUTF("VMLineNumberInsnNode");
+                writer.writeInt(opcode);
+
+                writer.writeInt(lineNumberNode.line);
+                if (debug) System.out.println("lineNumberNode.line: " + lineNumberNode.line);
+            } else if (insn instanceof JumpInsnNode) {
+                JumpInsnNode jumpInsnNode = (JumpInsnNode) insn;
+
+                if (debug) System.out.println("VMJumpInsnNode: " + opcode);
+                writer.writeUTF("VMJumpInsnNode");
+                writer.writeInt(opcode);
+
+                writer.writeInt(insnList.indexOf(jumpInsnNode.label));
+                if (debug)
+                    System.out.println("insnList.indexOf(jumpInsnNode.label): " + insnList.indexOf(jumpInsnNode.label));
+            } else if (insn instanceof IntInsnNode) {
+                IntInsnNode intInsnNode = (IntInsnNode) insn;
+
+                if (debug) System.out.println(": " + opcode);
+                writer.writeUTF("VMIntInsnNode");
+                writer.writeInt(opcode);
+
+                writer.writeInt(intInsnNode.operand);
+                if (debug) System.out.println("intInsnNode.operand: " + intInsnNode.operand);
+            } else if (insn instanceof InsnNode) {
+                InsnNode insnNode = (InsnNode) insn;
+
+                if (debug) System.out.println("VMInsnNode: " + opcode);
+                writer.writeUTF("VMInsnNode");
+                writer.writeInt(opcode);
+
+                // Nothing required, we use the opcode
+            } else if (insn instanceof FieldInsnNode) {
+                FieldInsnNode fieldInsnNode = (FieldInsnNode) insn;
+
+                if (debug) System.out.println("VMFieldInsnNode: " + opcode);
+                writer.writeUTF("VMFieldInsnNode");
+                writer.writeInt(opcode);
+
+                if (debug) System.out.println("fieldInsnNode.owner: " + fieldInsnNode.owner.replace("/", "."));
+                writer.writeUTF(fieldInsnNode.owner.replace("/", "."));
+                if (debug) System.out.println("fieldInsnNode.name: " + fieldInsnNode.name);
+                writer.writeUTF(fieldInsnNode.name);
+                if (opcode == Opcodes.GETSTATIC) {
+                    if (debug) System.out.println("fieldInsnNode.opcode: GETSTATIC");
+                    writer.writeBoolean(true); // isStatic
+                    writer.writeBoolean(false); // isPut
+                } else if (opcode == Opcodes.PUTSTATIC) {
+                    writer.writeBoolean(true); // isStatic
+                    writer.writeBoolean(true); // isPut
+                } else if (opcode == Opcodes.GETFIELD) {
+                    if (debug) System.out.println("fieldInsnNode.opcode: GETFIELD");
+                    writer.writeBoolean(false); // isStatic
+                    writer.writeBoolean(false); // isPut
+                } else if (opcode == Opcodes.PUTFIELD) {
+                    writer.writeBoolean(false); // isStatic
+                    writer.writeBoolean(true); // isPut
                 }
-                case LineNumberNode lineNumberNode -> {
-                    if (debug) System.out.println("VMLineNumberInsnNode: " + opcode);
-                    writer.writeUTF("VMLineNumberInsnNode");
-                    writer.writeInt(opcode);
+            } else if (insn instanceof MethodInsnNode) {
+                MethodInsnNode methodInsnNode = (MethodInsnNode) insn;
 
-                    writer.writeInt(lineNumberNode.line);
-                    if (debug) System.out.println("lineNumberNode.line: " + lineNumberNode.line);
-                }
-                case JumpInsnNode jumpInsnNode -> {
-                    if (debug) System.out.println("VMJumpInsnNode: " + opcode);
-                    writer.writeUTF("VMJumpInsnNode");
-                    writer.writeInt(opcode);
+                if (debug) System.out.println("VMMethodInsnNode: " + opcode);
 
-                    writer.writeInt(insnList.indexOf(jumpInsnNode.label));
-                    if (debug) 
-                        System.out.println("insnList.indexOf(jumpInsnNode.label): " + insnList.indexOf(jumpInsnNode.label));
-                }
-                case IntInsnNode intInsnNode -> {
-                    if (debug) System.out.println(": " + opcode);
-                    writer.writeUTF("VMIntInsnNode");
-                    writer.writeInt(opcode);
-
-                    writer.writeInt(intInsnNode.operand);
-                    if (debug) System.out.println("intInsnNode.operand: " + intInsnNode.operand);
-                }
-                case InsnNode insnNode -> {
-                    if (debug) System.out.println("VMInsnNode: " + opcode);
-                    writer.writeUTF("VMInsnNode");
-                    writer.writeInt(opcode);
-
-                    // Nothing required, we use the opcode
-                }
-                case FieldInsnNode fieldInsnNode -> {
-                    if (debug) System.out.println("VMFieldInsnNode: " + opcode);
-                    writer.writeUTF("VMFieldInsnNode");
-                    writer.writeInt(opcode);
-
-                    if (debug) System.out.println("fieldInsnNode.owner: " + fieldInsnNode.owner.replace("/", "."));
-                    writer.writeUTF(fieldInsnNode.owner.replace("/", "."));
-                    if (debug) System.out.println("fieldInsnNode.name: " + fieldInsnNode.name);
-                    writer.writeUTF(fieldInsnNode.name);
-                    if (opcode == Opcodes.GETSTATIC) {
-                        if (debug) System.out.println("fieldInsnNode.opcode: GETSTATIC");
-                        writer.writeBoolean(true); // isStatic
-                        writer.writeBoolean(false); // isPut
-                    } else if (opcode == Opcodes.PUTSTATIC) {
-                        writer.writeBoolean(true); // isStatic
-                        writer.writeBoolean(true); // isPut
-                    } else if (opcode == Opcodes.GETFIELD) {
-                        if (debug) System.out.println("fieldInsnNode.opcode: GETFIELD");
-                        writer.writeBoolean(false); // isStatic
-                        writer.writeBoolean(false); // isPut
-                    } else if (opcode == Opcodes.PUTFIELD) {
-                        writer.writeBoolean(false); // isStatic
-                        writer.writeBoolean(true); // isPut
+                if (methodInsnNode.name.equals("clone")
+                        && methodInsnNode.desc.equals("()Ljava/lang/Object;")) {
+                    Type owner = Type.getObjectType(methodInsnNode.owner);
+                    if (owner.getSort() == Type.ARRAY) {
+                        // Since this does not work
+                        throw new IllegalStateException("clone method is not supported in: " + className + " " + methodName + methodDesc);
                     }
                 }
-                case MethodInsnNode methodInsnNode -> {
-                    if (debug) System.out.println("VMMethodInsnNode: " + opcode);
 
-                    if (methodInsnNode.name.equals("clone")
-                            && methodInsnNode.desc.equals("()Ljava/lang/Object;")) {
-                        Type owner = Type.getObjectType(methodInsnNode.owner);
-                        if (owner.getSort() == Type.ARRAY) {
-                            // Since this does not work
-                            throw new IllegalStateException("clone method is not supported in: " + className + " " + methodName + methodDesc);
-                        }
-                    }
+                writer.writeUTF("VMMethodInsnNode");
+                writer.writeInt(opcode);
 
-                    writer.writeUTF("VMMethodInsnNode");
-                    writer.writeInt(opcode);
-
-                    if (debug) System.out.println("methodInsnNode.owner: " + methodInsnNode.owner.replace("/", "."));
-                    writer.writeUTF(methodInsnNode.owner.replace("/", "."));
-                    if (debug) System.out.println("methodInsnNode.name: " +methodInsnNode.name);
-                    writer.writeUTF(methodInsnNode.name);
-                    Type[] argumentTypes = Type.getArgumentTypes(methodInsnNode.desc);
-                    writer.writeInt(argumentTypes.length);
-                    if (debug) System.out.println("argumentTypes.length: " + argumentTypes.length);
-                    for (Type type : argumentTypes)
-                    {
-                        if (debug) System.out.println("arg.getInternalName(): " + type.getInternalName().replace("/", "."));
-                        writer.writeUTF(type.getInternalName().replace("/", "."));
-                    }
-                    if (debug) System.out.println("methodInsnNode.returnType: " + Type.getReturnType(methodInsnNode.desc).getInternalName().replace("/", "."));
-                    writer.writeUTF(Type.getReturnType(methodInsnNode.desc).getInternalName().replace("/", "."));
-
-                    // invokeType
-                    if (opcode == Opcodes.INVOKESTATIC)
-                        writer.writeInt(0);
-                    else if (opcode == Opcodes.INVOKEVIRTUAL)
-                        writer.writeInt(1);
-                    else if (opcode == Opcodes.INVOKESPECIAL)
-                        writer.writeInt(2);
-                    else if (opcode == Opcodes.INVOKEINTERFACE)
-                        writer.writeInt(3);
-                    else
-                        throw new IllegalStateException("Unexpected opcode: " + opcode + " (" + getOpcodeName(opcode) + ")");
+                if (debug) System.out.println("methodInsnNode.owner: " + methodInsnNode.owner.replace("/", "."));
+                writer.writeUTF(methodInsnNode.owner.replace("/", "."));
+                if (debug) System.out.println("methodInsnNode.name: " +methodInsnNode.name);
+                writer.writeUTF(methodInsnNode.name);
+                Type[] argumentTypes = Type.getArgumentTypes(methodInsnNode.desc);
+                writer.writeInt(argumentTypes.length);
+                if (debug) System.out.println("argumentTypes.length: " + argumentTypes.length);
+                for (Type type : argumentTypes)
+                {
+                    if (debug) System.out.println("arg.getInternalName(): " + type.getInternalName().replace("/", "."));
+                    writer.writeUTF(type.getInternalName().replace("/", "."));
                 }
-                case TypeInsnNode typeInsnNode -> {
-                    if (debug) System.out.println("VMTypeInsnNode: " + opcode);
-                    writer.writeUTF("VMTypeInsnNode");
-                    writer.writeInt(opcode);
+                if (debug) System.out.println("methodInsnNode.returnType: " + Type.getReturnType(methodInsnNode.desc).getInternalName().replace("/", "."));
+                writer.writeUTF(Type.getReturnType(methodInsnNode.desc).getInternalName().replace("/", "."));
 
-                    if (debug) 
-                        System.out.println("typeInsnNode.desc: " + Type.getObjectType(typeInsnNode.desc).getInternalName().replace("/", "."));
-                    writer.writeUTF(Type.getObjectType(typeInsnNode.desc).getInternalName().replace("/", "."));
-                }
-                case LdcInsnNode ldcInsnNode -> {
-                    if (debug) System.out.println("VMLdcInsnNode: " + opcode);
-                    writer.writeUTF("VMLdcInsnNode");
-                    writer.writeInt(opcode);
+                // invokeType
+                if (opcode == Opcodes.INVOKESTATIC)
+                    writer.writeInt(0);
+                else if (opcode == Opcodes.INVOKEVIRTUAL)
+                    writer.writeInt(1);
+                else if (opcode == Opcodes.INVOKESPECIAL)
+                    writer.writeInt(2);
+                else if (opcode == Opcodes.INVOKEINTERFACE)
+                    writer.writeInt(3);
+                else
+                    throw new IllegalStateException("Unexpected opcode: " + opcode + " (" + getOpcodeName(opcode) + ")");
+            } else if (insn instanceof TypeInsnNode) {
+                TypeInsnNode typeInsnNode = (TypeInsnNode) insn;
 
-                    Object cst = ldcInsnNode.cst;
-                    switch (cst) {
-                        case String s -> {
-                            writer.writeInt(0);
-                            writer.writeUTF(s);
-                        }
-                        case Integer k -> {
-                            writer.writeInt(1);
-                            writer.writeInt(k);
-                        }
-                        case Long l -> {
-                            writer.writeInt(2);
-                            writer.writeLong(l);
-                        }
-                        case Float f -> {
-                            writer.writeInt(3);
-                            writer.writeFloat(f);
-                        }
-                        case Double d -> {
-                            writer.writeInt(4);
-                            writer.writeDouble(d);
-                        }
-                        case Type t -> {
-                            writer.writeInt(5);
-                            writer.writeUTF(t.getInternalName().replace("/", "."));
-                        }
-                        case null, default -> throw new IllegalStateException("Unexpected cst type: " + cst + " (" + cst.getClass().getSimpleName() + ")");
-                    }
-                    if (debug) System.out.println("cst: " + cst + " (" + cst.getClass().getSimpleName() + ")");
-                }
-                case VarInsnNode varInsnNode -> {
-                    if (debug) System.out.println("VMVarInsnNode: " + opcode);
-                    writer.writeUTF("VMVarInsnNode");
-                    writer.writeInt(opcode);
+                if (debug) System.out.println("VMTypeInsnNode: " + opcode);
+                writer.writeUTF("VMTypeInsnNode");
+                writer.writeInt(opcode);
 
-                    if (debug) System.out.println("varInsnNode.var: " + varInsnNode.var);
-                    writer.writeInt(varInsnNode.var);
-                }
-                case IincInsnNode iincInsnNode -> {
-                    if (debug) System.out.println("VMIincInsnNode: " + opcode);
-                    writer.writeUTF("VMIincInsnNode");
-                    writer.writeInt(opcode);
+                if (debug)
+                    System.out.println("typeInsnNode.desc: " + Type.getObjectType(typeInsnNode.desc).getInternalName().replace("/", "."));
+                writer.writeUTF(Type.getObjectType(typeInsnNode.desc).getInternalName().replace("/", "."));
+            } else if (insn instanceof LdcInsnNode) {
+                LdcInsnNode ldcInsnNode = (LdcInsnNode) insn;
 
-                    if (debug) System.out.println("iincInsnNode.var: " + iincInsnNode.var);
-                    writer.writeInt(iincInsnNode.var);
-                    if (debug) System.out.println("iincInsnNode.incr: " + iincInsnNode.incr);
-                    writer.writeInt(iincInsnNode.incr);
+                if (debug) System.out.println("VMLdcInsnNode: " + opcode);
+                writer.writeUTF("VMLdcInsnNode");
+                writer.writeInt(opcode);
+
+                Object cst = ldcInsnNode.cst;
+                if (cst instanceof String) {
+                    writer.writeInt(0);
+                    writer.writeUTF((String) cst);
+                } else if (cst instanceof Integer) {
+                    writer.writeInt(1);
+                    writer.writeInt((Integer) cst);
+                } else if (cst instanceof Long) {
+                    writer.writeInt(2);
+                    writer.writeLong((Long) cst);
+                } else if (cst instanceof Float) {
+                    writer.writeInt(3);
+                    writer.writeFloat((Float) cst);
+                } else if (cst instanceof Double) {
+                    writer.writeInt(4);
+                    writer.writeDouble((Double) cst);
+                } else if (cst instanceof Type) {
+                    writer.writeInt(5);
+                    writer.writeUTF(((Type)cst).getInternalName().replace("/", "."));
+                } else {
+                    throw new IllegalStateException("Unexpected cst type: " + cst + " (" + cst.getClass().getSimpleName() + ")");
                 }
-                case InvokeDynamicInsnNode idin-> {
-                    /* Try injecting invokedynamics,
-                     * return false if we find something unsupported
-                     */
-                    boolean invokeDynamicsDebug = false;
-                    if (translateInvokeDynamics == null)
-                        translateInvokeDynamics = new TranslateInvokeDynamics(
+                if (debug) System.out.println("cst: " + cst + " (" + cst.getClass().getSimpleName() + ")");
+            } else if (insn instanceof VarInsnNode) {
+                VarInsnNode varInsnNode = (VarInsnNode) insn;
+
+                if (debug) System.out.println("VMVarInsnNode: " + opcode);
+                writer.writeUTF("VMVarInsnNode");
+                writer.writeInt(opcode);
+
+                if (debug) System.out.println("varInsnNode.var: " + varInsnNode.var);
+                writer.writeInt(varInsnNode.var);
+            } else if (insn instanceof IincInsnNode) {
+                IincInsnNode iincInsnNode = (IincInsnNode) insn;
+
+                if (debug) System.out.println("VMIincInsnNode: " + opcode);
+                writer.writeUTF("VMIincInsnNode");
+                writer.writeInt(opcode);
+
+                if (debug) System.out.println("iincInsnNode.var: " + iincInsnNode.var);
+                writer.writeInt(iincInsnNode.var);
+                if (debug) System.out.println("iincInsnNode.incr: " + iincInsnNode.incr);
+                writer.writeInt(iincInsnNode.incr);
+            } else if (insn instanceof InvokeDynamicInsnNode) {
+                InvokeDynamicInsnNode idin = (InvokeDynamicInsnNode) insn;
+
+                /* Try injecting invokedynamics,
+                 * return false if we find something unsupported
+                 */
+                boolean invokeDynamicsDebug = false;
+                if (translateInvokeDynamics == null)
+                    translateInvokeDynamics = new TranslateInvokeDynamics(
                             node, classAccess,
                             method, methodAccess,
                             writer,
                             debug || invokeDynamicsDebug,
                             debugPrettyPrint,
                             doStackAnalyze
-                        );
-                    if (!translateInvokeDynamics.translate(idin))
-                        throw new IllegalStateException("Invokedynamic instruction has unsupported arguments in: " + className + " " + methodName + methodDesc);
+                    );
+                if (!translateInvokeDynamics.translate(idin))
+                    throw new IllegalStateException("Invokedynamic instruction has unsupported arguments in: " + className + " " + methodName + methodDesc);
+            } else if (insn instanceof LookupSwitchInsnNode) {
+                LookupSwitchInsnNode lookup = (LookupSwitchInsnNode) insn;
+
+                if (debug) System.out.println("VMLookupSwitchInsnNode: " + opcode);
+                writer.writeUTF("VMLookupSwitchInsnNode");
+                writer.writeInt(opcode);
+
+                int defaultIndex = insnList.indexOf(lookup.dflt);
+                writer.writeInt(defaultIndex);
+
+                List<Integer> keys = lookup.keys;
+                List<LabelNode> labels = lookup.labels;
+
+                int countKeys = keys.size();
+                int countLabels = labels.size();
+                if (countKeys != countLabels)
+                    throw new IllegalStateException("countKeys = " + countKeys + ", " + "countLabels = " + countLabels + ". " +
+                            "countKeys != countLabels");
+
+                writer.writeInt(countKeys);
+                for (int i = 0; i < countKeys; i++)
+                {
+                    writer.writeInt(keys.get(i));
+                    writer.writeInt(insnList.indexOf(labels.get(i)));
                 }
-                case LookupSwitchInsnNode lookup -> {
-                    if (debug) System.out.println("VMLookupSwitchInsnNode: " + opcode);
-                    writer.writeUTF("VMLookupSwitchInsnNode");
-                    writer.writeInt(opcode);
+            } else if (insn instanceof TableSwitchInsnNode) {
+                TableSwitchInsnNode table = (TableSwitchInsnNode) insn;
 
-                    int defaultIndex = insnList.indexOf(lookup.dflt);
-                    writer.writeInt(defaultIndex);
+                if (debug) System.out.println("VMTableSwitchInsnNode: " + opcode);
+                writer.writeUTF("VMTableSwitchInsnNode");
+                writer.writeInt(opcode);
 
-                    List<Integer> keys = lookup.keys;
-                    List<LabelNode> labels = lookup.labels;
+                writer.writeInt(table.min); // min
+                writer.writeInt(table.max); // max
+                writer.writeInt(insnList.indexOf(table.dflt)); // defaultIndex
 
-                    int countKeys = keys.size();
-                    int countLabels = labels.size();
-                    if (countKeys != countLabels)
-                        throw new IllegalStateException("countKeys = " + countKeys + ", " + "countLabels = " + countLabels + ". " +
-                                "countKeys != countLabels");
-
-                    writer.writeInt(countKeys);
-                    for (int i = 0; i < countKeys; i++)
-                    {
-                        writer.writeInt(keys.get(i));
-                        writer.writeInt(insnList.indexOf(labels.get(i)));
-                    }
-                }
-                case TableSwitchInsnNode table -> {
-                    if (debug) System.out.println("VMTableSwitchInsnNode: " + opcode);
-                    writer.writeUTF("VMTableSwitchInsnNode");
-                    writer.writeInt(opcode);
-
-                    writer.writeInt(table.min); // min
-                    writer.writeInt(table.max); // max
-                    writer.writeInt(insnList.indexOf(table.dflt)); // defaultIndex
-
-                    List<LabelNode> labels = table.labels;
-                    writer.writeInt(labels.size());
-                    for (LabelNode label : labels)
-                        writer.writeInt(insnList.indexOf(label));
-                }
-                case FrameNode frameNode ->
-                    // Ignore
-                    writer.writeUTF("VMIgnore");
-
-                default -> throw new ObzcureException("Instruction not implemented yet: " + insn.getClass().getSimpleName());
+                List<LabelNode> labels = table.labels;
+                writer.writeInt(labels.size());
+                for (LabelNode label : labels)
+                    writer.writeInt(insnList.indexOf(label));
+            } else if (insn instanceof FrameNode) {
+                // Ignore
+                writer.writeUTF("VMIgnore");
+            } else {
+                throw new ObzcureException("Instruction not implemented yet: " + insn.getClass().getSimpleName());
             }
         }
         if (!hasReachedSupercall)
@@ -446,6 +454,8 @@ public class Translator implements Opcodes
 
     public boolean translateInstructions(int resourceIndex)
     {
+        if (!method.hasAnnotation("ApplyObzcureVM"))
+            return false;
 
         boolean isVirtualizationEnabled = true;
         if (!isVirtualizationEnabled)
@@ -481,8 +491,18 @@ public class Translator implements Opcodes
         {
             switch (returnType.getSort())
             {
-                case Type.INT, Type.LONG, Type.FLOAT, Type.DOUBLE, Type.BYTE, Type.SHORT, Type.CHAR, Type.BOOLEAN, Type.OBJECT, Type.ARRAY, Type.VOID -> {}
-                default -> throw new IllegalStateException("Unexpected value: " + returnType.getInternalName());
+                case Type.INT:
+                case Type.LONG:
+                case Type.FLOAT:
+                case Type.DOUBLE:
+                case Type.BYTE:
+                case Type.SHORT:
+                case Type.CHAR:
+                case Type.BOOLEAN:
+                case Type.OBJECT:
+                case Type.ARRAY:
+                case Type.VOID: break;
+                default: throw new IllegalStateException("Unexpected value: " + returnType.getInternalName());
             }
         }
         catch (Throwable t)
@@ -505,8 +525,8 @@ public class Translator implements Opcodes
         catch (Throwable t)
         {
 //            t.printStackTrace();
-            if (t instanceof ObzcureNoNeedForTranslationException ex)
-                System.out.println(ex.getMessage());
+            if (t instanceof ObzcureNoNeedForTranslationException)
+                System.out.println(t.getMessage());
             else
                 System.err.println("Error: " + t.getMessage());
             return false;
@@ -524,7 +544,9 @@ public class Translator implements Opcodes
             for (Type arg : argumentTypes)
                 switch (arg.getSort())
                 {
-                    case Type.DOUBLE, Type.LONG -> extraLocals++;
+                    case Type.DOUBLE:
+                    case Type.LONG:
+                        extraLocals++;
                 }
 
             Type mainType = Type.getType(ObzcureVM.class);
@@ -603,9 +625,13 @@ public class Translator implements Opcodes
             int argsCount = argumentTypes.length;
             int storeIndex = isStatic ? 0 : 1;
             for (Type type : argumentTypes)
-                storeIndex += switch (type.getSort()) {
-                    case Type.LONG, Type.DOUBLE -> 2;
-                    default -> 1;
+                switch (type.getSort()) {
+                    case Type.LONG:
+                    case Type.DOUBLE:
+                        storeIndex += 2;
+                    break;
+                    default:
+                        storeIndex += 1;
                 };
 
             if (hasTryCatches || argsCount > 0 || !isStatic)
@@ -630,21 +656,25 @@ public class Translator implements Opcodes
                     insnList.add(new VarInsnNode(ASMUtils.getVarOpcode(mainType, false), storeIndex)); // vm.
                     insnList.add(ASMUtils.getNumberInsn(currIndex));
                     insnList.add(new VarInsnNode(ASMUtils.getVarOpcode(type, false), currIndex));
-                    currIndex += switch (type.getSort())
+                    switch (type.getSort())
                     {
-                        case Type.LONG, Type.DOUBLE -> 2;
-                        default -> 1;
+                        case Type.LONG:
+                        case Type.DOUBLE:
+                            currIndex += 2;
+                            break;
+                        default:
+                            currIndex += 1;
                     };
                     switch (type.getSort())
                     {
-                        case Type.INT -> insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;"));
-                        case Type.LONG -> insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;"));
-                        case Type.FLOAT -> insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;"));
-                        case Type.DOUBLE -> insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;"));
-                        case Type.BYTE -> insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;"));
-                        case Type.SHORT -> insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;"));
-                        case Type.CHAR -> insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;"));
-                        case Type.BOOLEAN -> insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;"));
+                        case Type.INT: insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;")); break;
+                        case Type.LONG: insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;")); break;
+                        case Type.FLOAT: insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;")); break;
+                        case Type.DOUBLE: insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;")); break;
+                        case Type.BYTE: insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;")); break;
+                        case Type.SHORT: insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;")); break;
+                        case Type.CHAR: insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;")); break;
+                        case Type.BOOLEAN: insnList.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;")); break;
                     }
                     insnList.add(new MethodInsnNode(INVOKEVIRTUAL, mainClassName, "setLocal", "(ILjava/lang/Object;)V", false));
                 }
@@ -665,27 +695,32 @@ public class Translator implements Opcodes
             else
                 switch (returnType.getSort())
                 {
-                    case Type.INT, Type.BOOLEAN, Type.BYTE, Type.CHAR, Type.SHORT -> {
+                    case Type.INT:
+                    case Type.BOOLEAN:
+                    case Type.BYTE:
+                    case Type.CHAR:
+                    case Type.SHORT: {
                         insnList.add(new TypeInsnNode(CHECKCAST, "java/lang/Integer"));
                         insnList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I"));
                         insnList.add(new InsnNode(IRETURN));
-                    }
-                    case Type.LONG -> {
+                    } break;
+                    case Type.LONG: {
                         insnList.add(new TypeInsnNode(CHECKCAST, "java/lang/Long"));
                         insnList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J"));
                         insnList.add(new InsnNode(LRETURN));
-                    }
-                    case Type.FLOAT -> {
+                    } break;
+                    case Type.FLOAT: {
                         insnList.add(new TypeInsnNode(CHECKCAST, "java/lang/Float"));
                         insnList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F"));
                         insnList.add(new InsnNode(FRETURN));
-                    }
-                    case Type.DOUBLE -> {
+                    } break;
+                    case Type.DOUBLE: {
                         insnList.add(new TypeInsnNode(CHECKCAST, "java/lang/Double"));
                         insnList.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D"));
                         insnList.add(new InsnNode(DRETURN));
-                    }
-                    case Type.ARRAY, Type.OBJECT -> {
+                    } break;
+                    case Type.ARRAY:
+                    case Type.OBJECT: {
                         insnList.add(new TypeInsnNode(CHECKCAST, returnType.getInternalName()));
                         insnList.add(new InsnNode(ARETURN));
                     }

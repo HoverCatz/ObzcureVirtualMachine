@@ -35,17 +35,18 @@ public class VMIntInsnNode extends VMNode
         if (opcode == NEWARRAY)
         {
             int count = stack.popInt();
-            Class<?> arrayType = switch (getNextInt())
+            Class<?> arrayType;
+            switch (getNextInt())
             {
-                case T_BOOLEAN -> Boolean.TYPE;
-                case T_CHAR -> Character.TYPE;
-                case T_FLOAT -> Float.TYPE;
-                case T_DOUBLE -> Double.TYPE;
-                case T_BYTE -> Byte.TYPE;
-                case T_SHORT -> Short.TYPE;
-                case T_INT -> Integer.TYPE;
-                case T_LONG -> Long.TYPE;
-                default -> throw new RuntimeException("Invalid NEWARRAY type: '" + input[0] + "'");
+                case T_BOOLEAN: arrayType = Boolean.TYPE; break;
+                case T_CHAR: arrayType = Character.TYPE; break;
+                case T_FLOAT: arrayType = Float.TYPE; break;
+                case T_DOUBLE: arrayType = Double.TYPE; break;
+                case T_BYTE: arrayType = Byte.TYPE; break;
+                case T_SHORT: arrayType = Short.TYPE; break;
+                case T_INT: arrayType = Integer.TYPE; break;
+                case T_LONG: arrayType = Long.TYPE; break;
+                default: throw new RuntimeException("Invalid NEWARRAY type: '" + input[0] + "'");
             };
             stack.push(Array.newInstance(arrayType, count));
         }

@@ -38,45 +38,45 @@ public class VMLoader
                 System.out.println("curr: " + curr++);
             switch (className)
             {
-                case "VMLabelInsnNode" -> {
+                case "VMLabelInsnNode": {
                     VMLabelInsnNode node = new VMLabelInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     int index = dis.readInt();
                     if (debug) System.err.println("\033[91mindex: " + index);
                     setInput(vm, node, index);
                     nodes.add(node);
-                }
-                case "VMLineNumberInsnNode" -> {
+                } break;
+                case "VMLineNumberInsnNode": {
                     VMLineNumberInsnNode node = new VMLineNumberInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     int lineNumber = dis.readInt();
                     if (debug) System.err.println("\033[91mlineNumber: " + lineNumber);
                     setInput(vm, node, lineNumber);
                     nodes.add(node);
-                }
-                case "VMJumpInsnNode" -> {
+                } break;
+                case "VMJumpInsnNode": {
                     VMJumpInsnNode node = new VMJumpInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     int index = dis.readInt();
                     if (debug) System.err.println("\033[91mindex: " + index);
                     setInput(vm, node, index);
                     nodes.add(node);
-                }
-                case "VMIntInsnNode" -> {
+                } break;
+                case "VMIntInsnNode": {
                     VMIntInsnNode node = new VMIntInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     int operand = dis.readInt();
                     if (debug) System.err.println("\033[91moperand: " + operand);
                     setInput(vm, node, operand);
                     nodes.add(node);
-                }
-                case "VMInsnNode" -> {
+                } break;
+                case "VMInsnNode": {
                     VMInsnNode node = new VMInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     // No inputs, we use the opcode
                     nodes.add(node);
-                }
-                case "VMFieldInsnNode" -> {
+                } break;
+                case "VMFieldInsnNode": {
                     VMFieldInsnNode node = new VMFieldInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     setInput(vm, node,
@@ -87,8 +87,8 @@ public class VMLoader
                     );
                     if (debug) System.err.println("\033[91mobjects: " + Arrays.toString(node.original));
                     nodes.add(node);
-                }
-                case "VMMethodInsnNode" -> {
+                } break;
+                case "VMMethodInsnNode": {
                     VMMethodInsnNode node = new VMMethodInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     List<Object> inputs = new ArrayList<>();
@@ -103,16 +103,16 @@ public class VMLoader
                     setInput(vm, node, inputs.toArray(new Object[0]));
                     if (debug) System.err.println("\033[91mobjects: " + Arrays.toString(node.original));
                     nodes.add(node);
-                }
-                case "VMTypeInsnNode" -> {
+                } break;
+                case "VMTypeInsnNode": {
                     VMTypeInsnNode node = new VMTypeInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     String desc = dis.readUTF();
                     setInput(vm, node, desc);
                     if (debug) System.err.println("\033[91mobjects: " + Arrays.toString(node.original));
                     nodes.add(node);
-                }
-                case "VMLdcInsnNode" -> {
+                } break;
+                case "VMLdcInsnNode": {
                     VMLdcInsnNode node = new VMLdcInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     int type = dis.readInt();
@@ -121,26 +121,27 @@ public class VMLoader
                     inputs.add(type);
                     switch (type)
                     {
-                        case 0, 5 -> inputs.add(dis.readUTF());
-                        case 1 -> inputs.add(dis.readInt());
-                        case 2 -> inputs.add(dis.readLong());
-                        case 3 -> inputs.add(dis.readFloat());
-                        case 4 -> inputs.add(dis.readDouble());
-                        default -> throw new IllegalStateException("Unexpected value: " + type);
+                        case 0:
+                        case 5: inputs.add(dis.readUTF()); break;
+                        case 1: inputs.add(dis.readInt()); break;
+                        case 2: inputs.add(dis.readLong()); break;
+                        case 3: inputs.add(dis.readFloat()); break;
+                        case 4: inputs.add(dis.readDouble()); break;
+                        default:  throw new IllegalStateException("Unexpected value: " + type);
                     }
                     setInput(vm, node, inputs.toArray(new Object[0]));
                     if (debug) System.err.println("\033[91mobjects: " + Arrays.toString(node.original));
                     nodes.add(node);
-                }
-                case "VMVarInsnNode" -> {
+                } break;
+                case "VMVarInsnNode": {
                     VMVarInsnNode node = new VMVarInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     int var = dis.readInt();
                     if (debug) System.err.println("\033[91mvar: " + var);
                     setInput(vm, node, var);
                     nodes.add(node);
-                }
-                case "VMIincInsnNode" -> {
+                } break;
+                case "VMIincInsnNode": {
                     VMIincInsnNode node = new VMIincInsnNode(dis.readInt());
                     if (debug) System.err.println("\033[91mopcode: " + node.opcode);
                     int var = dis.readInt();
@@ -149,8 +150,8 @@ public class VMLoader
                     if (debug) System.err.println("\033[91mincr: " + incr);
                     setInput(vm, node, var, incr);
                     nodes.add(node);
-                }
-                case "VMInvokeDynamicInsnNode" -> {
+                } break;
+                case "VMInvokeDynamicInsnNode": {
                     boolean unsupported = false;
                     if (unsupported)
                         continue;
@@ -161,8 +162,8 @@ public class VMLoader
                         throw new IllegalStateException("Unsupported invokedynamics instruction reached.");
                     setInput(vm, node, inputs.toArray(new Object[0]));
                     nodes.add(node);
-                }
-                case "VMLookupSwitchInsnNode" -> {
+                } break;
+                case "VMLookupSwitchInsnNode": {
                     VMLookupSwitchInsnNode node = new VMLookupSwitchInsnNode(dis.readInt());
                     int defaultIndex = dis.readInt();
                     int count = dis.readInt();
@@ -175,8 +176,8 @@ public class VMLoader
                     }
                     setInput(vm, node, defaultIndex, keys, labels);
                     nodes.add(node);
-                }
-                case "VMTableSwitchInsnNode" -> {
+                } break;
+                case "VMTableSwitchInsnNode": {
                     VMTableSwitchInsnNode node = new VMTableSwitchInsnNode(dis.readInt());
                     int min = dis.readInt();
                     int max = dis.readInt();
@@ -187,12 +188,15 @@ public class VMLoader
                         labels[i] = dis.readInt();
                     setInput(vm, node, min, max, defaultIndex, labels);
                     nodes.add(node);
-                }
-                case "VMFrameNode", "VMIgnore" -> // Ignore
+                } break;
+                case "VMFrameNode":
+                case "VMIgnore":  // Ignore
                     nodes.add(new VMInsnNode(VMOpcodes.NOP));
+                    break;
 
-                case "Meow" -> done = true;
-                default -> throw new IllegalStateException("Unexpected value: " + className);
+                case "Meow": done = true;
+                    break;
+                default: throw new IllegalStateException("Unexpected value: " + className);
             }
         }
         dis.close();
@@ -202,9 +206,9 @@ public class VMLoader
     private static boolean readInvokeDynamics(DataInputStream dis, List<Object> inputs) throws Throwable
     {
         String which = dis.readUTF(); // which
-        return switch (which)
+        switch (which)
         {
-            case "StringConcatFactory" -> {
+            case "StringConcatFactory": {
                 inputs.add(which);
                 inputs.add(dis.readUTF()); // string
                 int argsLength = dis.readInt();
@@ -212,22 +216,20 @@ public class VMLoader
                 for (int i = 0; i < argsLength; i++)
                     args[i] = dis.readUTF(); // arg
                 inputs.add(args);
-                yield true;
+                return true;
             }
-            case
-                "Runnable",
+            case "Runnable":
 
-                // Comsumers
-                "Consumer",
-                "IntConsumer",
-                "LongConsumer",
-                "DoubleConsumer",
+                // Consumers
+            case "Consumer": 
+            case "IntConsumer": 
+            case "LongConsumer": 
+            case "DoubleConsumer": 
 
                 // Others
-                "Function",
-                "Predicate",
-                "Supplier"
-            -> {
+            case "Function": 
+            case "Predicate": 
+            case "Supplier": {
                 inputs.add(which);
                 inputs.add(dis.readInt()); // tag
                 inputs.add(dis.readUTF()); // owner
@@ -242,10 +244,10 @@ public class VMLoader
                 for (int i = 0; i < argumentLength; i++)
                     arguments[i] = dis.readUTF(); // argument
                 inputs.add(arguments);
-                yield true;
+                return true;
             }
-            default -> false;
-        };
+            default: return false;
+        }
     }
 
     private static void setInput(ObzcureVM vm, VMNode vmNode, Object... obj)

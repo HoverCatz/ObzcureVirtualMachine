@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
+import java.util.stream.Collectors;
 
 /**
  * @author HoverCatz
@@ -43,20 +44,20 @@ public class VMInvokeDynamicInsnNode extends VMNode
             System.out.println("!!! which: " + which);
         switch (which)
         {
-            case "StringConcatFactory" -> prepareStringConcat(vm, stack, lookup);
-            case "Runnable" -> prepareRunnable(vm, stack, lookup);
+            case "StringConcatFactory": prepareStringConcat(vm, stack, lookup); break;
+            case "Runnable": prepareRunnable(vm, stack, lookup); break;
 
             // Consumers
-            case "Consumer" -> prepareConsumer(vm, stack, lookup, Object.class.getName());
-            case "IntConsumer" -> prepareConsumer(vm, stack, lookup, Integer.class.getName());
-            case "LongConsumer" -> prepareConsumer(vm, stack, lookup, Long.class.getName());
-            case "DoubleConsumer" -> prepareConsumer(vm, stack, lookup, Double.class.getName());
+            case "Consumer": prepareConsumer(vm, stack, lookup, Object.class.getName()); break;
+            case "IntConsumer": prepareConsumer(vm, stack, lookup, Integer.class.getName()); break;
+            case "LongConsumer": prepareConsumer(vm, stack, lookup, Long.class.getName()); break;
+            case "DoubleConsumer": prepareConsumer(vm, stack, lookup, Double.class.getName()); break;
 
             // Others
-            case "Function" -> prepareFunction(vm, stack, lookup);
-            case "Predicate" -> preparePredicate(vm, stack, lookup);
-            case "Supplier" -> prepareSupplier(vm, stack, lookup);
-            default -> throw new RuntimeException("Invalid invokedynamics type: " + which);
+            case "Function": prepareFunction(vm, stack, lookup); break;
+            case "Predicate": preparePredicate(vm, stack, lookup); break;
+            case "Supplier": prepareSupplier(vm, stack, lookup); break;
+            default: throw new RuntimeException("Invalid invokedynamics type: " + which);
         }
 
     }
@@ -160,7 +161,7 @@ public class VMInvokeDynamicInsnNode extends VMNode
                 if (vm.debug)
                 {
                     System.out.println("!!! objects.length: " + objects.length);
-                    System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).toList());
+                    System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).collect(Collectors.toList()));
                 }
                 return mh.invokeWithArguments(objects);
             }
@@ -230,7 +231,7 @@ public class VMInvokeDynamicInsnNode extends VMNode
                 if (vm.debug)
                 {
                     System.out.println("!!! objects.length: " + objects.length);
-                    System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).toList());
+                    System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).collect(Collectors.toList()));
                 }
                 return (boolean) mh.invokeWithArguments(objects);
             }
@@ -300,7 +301,7 @@ public class VMInvokeDynamicInsnNode extends VMNode
                 if (vm.debug)
                 {
                     System.out.println("!!! objects.length: " + objects.length);
-                    System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).toList());
+                    System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).collect(Collectors.toList()));
                 }
                 return mh.invokeWithArguments(objects);
             }
@@ -326,8 +327,7 @@ public class VMInvokeDynamicInsnNode extends VMNode
 
         String[] arguments = (String[]) getNext();
         if (tag == 5)
-            arguments = Arrays.stream(Arrays.copyOfRange(arguments, 1, arguments.length))
-                    .toList().toArray(new String[0]);
+            arguments = Arrays.stream(Arrays.copyOfRange(arguments, 1, arguments.length)).toArray(String[]::new);
         Class<?>[] argumentClasses = getArgumentClasses(vm, arguments);
 
         Class<?> clazz = vm.getClass(owner);
@@ -370,7 +370,7 @@ public class VMInvokeDynamicInsnNode extends VMNode
                 if (vm.debug)
                 {
                     System.out.println("!!! popped.length: " + popped.length);
-                    System.out.println("popped: " + Arrays.stream(popped).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).toList());
+                    System.out.println("popped: " + Arrays.stream(popped).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).collect(Collectors.toList()));
                 }
                 MethodHandle _mh = mh;
                 if (tag == 5)
@@ -454,7 +454,7 @@ public class VMInvokeDynamicInsnNode extends VMNode
                     if (vm.debug)
                     {
                         System.out.println("!!! objects.length: " + objects.length);
-                        System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).toList());
+                        System.out.println("objects: " + Arrays.stream(objects).map(o2 -> (o2 == null ? null : o2.getClass().getSimpleName())).collect(Collectors.toList()));
                     }
                     mh.invokeWithArguments(objects);
                 }
@@ -465,13 +465,14 @@ public class VMInvokeDynamicInsnNode extends VMNode
             }
         };
 
-        Object c = switch (type)
+        Object c;
+        switch (type)
         {
-            case "java.lang.Object" -> consumer;
-            case "java.lang.Integer" -> (IntConsumer) consumer::accept;
-            case "java.lang.Long" -> (LongConsumer) consumer::accept;
-            case "java.lang.Double" -> (DoubleConsumer) consumer::accept;
-            default -> throw new IllegalStateException("Unexpected value: " + type);
+            case "java.lang.Object": c = consumer; break;
+            case "java.lang.Integer": c = (IntConsumer) consumer::accept; break;
+            case "java.lang.Long": c = (LongConsumer) consumer::accept; break;
+            case "java.lang.Double": c = (DoubleConsumer) consumer::accept; break;
+            default: throw new IllegalStateException("Unexpected value: " + type);
         };
 
         stack.push(c);
@@ -479,21 +480,23 @@ public class VMInvokeDynamicInsnNode extends VMNode
 
     private Object cast(Object bsmArg, Class<?> argumentType, MethodHandles.Lookup lookup, ObzcureVM vm) throws Throwable
     {
-        if (bsmArg instanceof VMType vmType && argumentType == MethodType.class)
+        if (bsmArg instanceof VMType && argumentType == MethodType.class)
         {
-            return MethodType.methodType(vm.getClass(vmType.returnType()), getArgumentClasses(vm, vmType.argumentTypes()));
+            VMType vmType = (VMType) bsmArg;
+            return MethodType.methodType(vm.getClass(vmType.returnType), getArgumentClasses(vm, vmType.argumentTypes));
         }
         else
-        if (bsmArg instanceof VMHandle vmHandle && argumentType == MethodHandle.class)
+        if (bsmArg instanceof VMHandle && argumentType == MethodHandle.class)
         {
-            if (vmHandle.tag() == H_INVOKESTATIC)
+            VMHandle vmHandle = (VMHandle) bsmArg;
+            if (vmHandle.tag == H_INVOKESTATIC)
             {
-                Class<?> refClass = vm.getClass(vmHandle.owner());
-                Class<?> returnType = vm.getClass(vmHandle.returnType());
+                Class<?> refClass = vm.getClass(vmHandle.owner);
+                Class<?> returnType = vm.getClass(vmHandle.returnType);
 
-                MethodType methodType = MethodType.methodType(returnType, getArgumentClasses(vm, vmHandle.argumentTypes()));
+                MethodType methodType = MethodType.methodType(returnType, getArgumentClasses(vm, vmHandle.argumentTypes));
 
-                MethodHandle aStatic = lookup.findStatic(refClass, vmHandle.name(), methodType);
+                MethodHandle aStatic = lookup.findStatic(refClass, vmHandle.name, methodType);
                 if (aStatic != null)
                     return aStatic;
             }

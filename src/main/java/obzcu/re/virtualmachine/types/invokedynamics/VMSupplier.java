@@ -7,8 +7,14 @@ import java.util.function.Supplier;
  * @created 12.02.2022
  * @url https://github.com/HoverCatz
  **/
-public record VMSupplier(Supplier<Object> s) implements Supplier<Object>
+public class VMSupplier implements Supplier<Object>
 {
+
+    private final Supplier<Object> s;
+
+    public VMSupplier(Supplier<Object> s) {
+        this.s = s;
+    }
 
     @Override
     public Object get()

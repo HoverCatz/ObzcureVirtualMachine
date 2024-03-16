@@ -7,8 +7,14 @@ import java.util.function.Function;
  * @created 17.01.2022
  * @url https://github.com/HoverCatz
  **/
-public record VMFunction(Function<Object, Object> f) implements Function<Object, Object>
+public class VMFunction implements Function<Object, Object>
 {
+
+    private final Function<Object, Object> f;
+
+    public VMFunction(Function<Object, Object> f) {
+        this.f = f;
+    }
 
     @Override
     public Object apply(Object o)

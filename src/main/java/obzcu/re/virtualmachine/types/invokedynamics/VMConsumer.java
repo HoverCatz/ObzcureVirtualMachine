@@ -7,8 +7,14 @@ import java.util.function.Consumer;
  * @created 16.01.2022
  * @url https://github.com/HoverCatz
  **/
-public record VMConsumer(Consumer<Object> c) implements Consumer<Object>
+public class VMConsumer implements Consumer<Object>
 {
+
+    private final Consumer<Object> c;
+
+    public VMConsumer(Consumer<Object> c) {
+        this.c = c;
+    }
 
     @Override
     public void accept(Object o)

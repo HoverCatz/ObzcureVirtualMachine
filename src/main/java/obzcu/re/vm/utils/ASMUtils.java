@@ -199,29 +199,50 @@ public class ASMUtils implements Opcodes
 
     public static int getReturnOpcode(Type type)
     {
-        return switch (type.getSort())
+        switch (type.getSort())
         {
-            case Type.BOOLEAN, Type.CHAR, Type.BYTE, Type.SHORT, Type.INT -> IRETURN;
-            case Type.FLOAT -> Opcodes.FRETURN;
-            case Type.LONG -> Opcodes.LRETURN;
-            case Type.DOUBLE -> Opcodes.DRETURN;
-            case Type.ARRAY, Type.OBJECT -> Opcodes.ARETURN;
-            case Type.VOID -> Opcodes.RETURN;
-            default -> throw new AssertionError("Unknown type sort: " + type.getClassName());
-        };
+            case Type.BOOLEAN:
+            case Type.CHAR:
+            case Type.BYTE:
+            case Type.SHORT:
+            case Type.INT:
+                return IRETURN;
+            case Type.FLOAT:
+                return Opcodes.FRETURN;
+            case Type.LONG:
+                return Opcodes.LRETURN;
+            case Type.DOUBLE:
+                return Opcodes.DRETURN;
+            case Type.ARRAY:
+            case Type.OBJECT:
+                return Opcodes.ARETURN;
+            case Type.VOID:
+                return Opcodes.RETURN;
+            default: throw new AssertionError("Unknown type sort: " + type.getClassName());
+        }
     }
 
     public static int getVarOpcode(Type type, boolean store)
     {
-        return switch (type.getSort())
+        switch (type.getSort())
         {
-            case Type.BOOLEAN, Type.CHAR, Type.BYTE, Type.SHORT, Type.INT -> store ? Opcodes.ISTORE : Opcodes.ILOAD;
-            case Type.FLOAT -> store ? Opcodes.FSTORE : Opcodes.FLOAD;
-            case Type.LONG -> store ? Opcodes.LSTORE : Opcodes.LLOAD;
-            case Type.DOUBLE -> store ? Opcodes.DSTORE : Opcodes.DLOAD;
-            case Type.ARRAY, Type.OBJECT -> store ? Opcodes.ASTORE : Opcodes.ALOAD;
-            default -> throw new AssertionError("Unknown type: " + type.getClassName());
-        };
+            case Type.BOOLEAN:
+            case Type.CHAR:
+            case Type.BYTE:
+            case Type.SHORT:
+            case Type.INT:
+                return store ? Opcodes.ISTORE : Opcodes.ILOAD;
+            case Type.FLOAT:
+                return store ? Opcodes.FSTORE : Opcodes.FLOAD;
+            case Type.LONG:
+                return store ? Opcodes.LSTORE : Opcodes.LLOAD;
+            case Type.DOUBLE:
+                return store ? Opcodes.DSTORE : Opcodes.DLOAD;
+            case Type.ARRAY:
+            case Type.OBJECT:
+                return store ? Opcodes.ASTORE : Opcodes.ALOAD;
+            default: throw new AssertionError("Unknown type: " + type.getClassName());
+        }
     }
 
     public static InsnList asList(AbstractInsnNode abstractInsnNode, AbstractInsnNode... abstractInsnNodes)
@@ -269,19 +290,29 @@ public class ASMUtils implements Opcodes
 
     public static AbstractInsnNode getRandomValue(Type type)
     {
-        return switch (type.getSort())
+        switch (type.getSort())
         {
-            case Type.BOOLEAN -> getNumberInsn(RandomUtils.getRandomInt(0, 2));
-            case Type.CHAR -> getNumberInsn(RandomUtils.getRandomInt(Character.MIN_VALUE, Character.MAX_VALUE));
-            case Type.BYTE -> getNumberInsn(RandomUtils.getRandomInt(Byte.MIN_VALUE, Byte.MAX_VALUE));
-            case Type.SHORT -> getNumberInsn(RandomUtils.getRandomInt(Short.MIN_VALUE, Short.MAX_VALUE));
-            case Type.INT -> getNumberInsn(RandomUtils.getRandomInt());
-            case Type.FLOAT -> getNumberInsn(RandomUtils.getRandomFloat());
-            case Type.LONG -> getNumberInsn(RandomUtils.getRandomLong());
-            case Type.DOUBLE -> getNumberInsn(RandomUtils.getRandomDouble());
-            case Type.ARRAY, Type.OBJECT -> new InsnNode(Opcodes.ACONST_NULL);
-            default -> throw new AssertionError();
-        };
+            case Type.BOOLEAN:
+                return getNumberInsn(RandomUtils.getRandomInt(0, 2));
+            case Type.CHAR:
+                return getNumberInsn(RandomUtils.getRandomInt(Character.MIN_VALUE, Character.MAX_VALUE));
+            case Type.BYTE:
+                return getNumberInsn(RandomUtils.getRandomInt(Byte.MIN_VALUE, Byte.MAX_VALUE));
+            case Type.SHORT:
+                return getNumberInsn(RandomUtils.getRandomInt(Short.MIN_VALUE, Short.MAX_VALUE));
+            case Type.INT:
+                return getNumberInsn(RandomUtils.getRandomInt());
+            case Type.FLOAT:
+                return getNumberInsn(RandomUtils.getRandomFloat());
+            case Type.LONG:
+                return getNumberInsn(RandomUtils.getRandomLong());
+            case Type.DOUBLE:
+                return getNumberInsn(RandomUtils.getRandomDouble());
+            case Type.ARRAY:
+            case Type.OBJECT:
+                return new InsnNode(Opcodes.ACONST_NULL);
+            default: throw new AssertionError();
+        }
     }
 
     public static InsnList returnInstructions(MethodNode m)
@@ -294,43 +325,44 @@ public class ASMUtils implements Opcodes
         Type type = Type.getReturnType(desc);
         switch (type.getSort())
         {
-            case Type.BOOLEAN -> {
+            case Type.BOOLEAN: {
                 list.add(new InsnNode(ICONST_0 + RandomUtils.getRandomInt(0, 2)));
                 list.add(new InsnNode(IRETURN));
-            }
-            case Type.CHAR -> {
+            } break;
+            case Type.CHAR: {
                 list.add(getNumberInsn(RandomUtils.getRandomInt(0, 65535)));
                 list.add(new InsnNode(IRETURN));
-            }
-            case Type.BYTE -> {
+            } break;
+            case Type.BYTE: {
                 list.add(getNumberInsn(RandomUtils.getRandomInt(-128, 127)));
                 list.add(new InsnNode(IRETURN));
             }
-            case Type.SHORT -> {
+            case Type.SHORT: {
                 list.add(getNumberInsn(RandomUtils.getRandomInt(-32768, 32767)));
                 list.add(new InsnNode(IRETURN));
-            }
-            case Type.INT -> {
+            } break;
+            case Type.INT: {
                 list.add(getNumberInsn(RandomUtils.getRandomInt(Integer.MIN_VALUE, Integer.MAX_VALUE)));
                 list.add(new InsnNode(IRETURN));
-            }
-            case Type.FLOAT -> {
+            } break;
+            case Type.FLOAT: {
                 list.add(getNumberInsn((float) RandomUtils.getRandomInt((int) Float.MIN_VALUE, (int) Float.MAX_VALUE)));
                 list.add(new InsnNode(FRETURN));
-            }
-            case Type.LONG -> {
+            } break;
+            case Type.LONG: {
                 list.add(getNumberInsn(RandomUtils.getRandomLong(Long.MIN_VALUE, Long.MAX_VALUE)));
                 list.add(new InsnNode(LRETURN));
-            }
-            case Type.DOUBLE -> {
+            } break;
+            case Type.DOUBLE: {
                 list.add(getNumberInsn((double) RandomUtils.getRandomInt((int) Double.MIN_VALUE, (int) Double.MAX_VALUE)));
                 list.add(new InsnNode(DRETURN));
-            }
-            case Type.OBJECT -> {
+            } break;
+            case Type.OBJECT: {
                 list.add(new InsnNode(ACONST_NULL));
                 list.add(new InsnNode(ARETURN));
-            }
-            case Type.VOID, default -> list.add(new InsnNode(RETURN));
+            } break;
+            case Type.VOID:
+            default: list.add(new InsnNode(RETURN));
         }
         return list;
     }
@@ -338,14 +370,24 @@ public class ASMUtils implements Opcodes
     public static AbstractInsnNode returnInstruction(MethodNode m)
     {
         Type type = Type.getReturnType(m.desc);
-        return switch (type.getSort()) {
-            case Type.BOOLEAN, Type.CHAR, Type.BYTE, Type.SHORT, Type.INT -> new InsnNode(IRETURN);
-            case Type.FLOAT -> new InsnNode(FRETURN);
-            case Type.LONG -> new InsnNode(LRETURN);
-            case Type.DOUBLE -> new InsnNode(DRETURN);
-            case Type.ARRAY, Type.OBJECT -> new InsnNode(ARETURN);
-            default -> new InsnNode(RETURN);
-        };
+        switch (type.getSort()) {
+            case Type.BOOLEAN:
+            case Type.CHAR:
+            case Type.BYTE:
+            case Type.SHORT:
+            case Type.INT:
+                return new InsnNode(IRETURN);
+            case Type.FLOAT:
+                return new InsnNode(FRETURN);
+            case Type.LONG:
+                return new InsnNode(LRETURN);
+            case Type.DOUBLE:
+                return new InsnNode(DRETURN);
+            case Type.ARRAY:
+            case Type.OBJECT:
+                return new InsnNode(ARETURN);
+            default: return new InsnNode(RETURN);
+        }
     }
 
     public static boolean checkAccess(final int access, final int check)

@@ -7,8 +7,15 @@ import java.util.Arrays;
  * @created 10.01.2022
  * @url https://github.com/HoverCatz
  **/
-public record VMType(String returnType, String[] argumentTypes)
-{
+public class VMType {
+
+    public final String returnType;
+    public final String[] argumentTypes;
+
+    public VMType(String returnType, String[] argumentTypes) {
+        this.returnType = returnType;
+        this.argumentTypes = argumentTypes;
+    }
 
     @Override
     public String toString() {

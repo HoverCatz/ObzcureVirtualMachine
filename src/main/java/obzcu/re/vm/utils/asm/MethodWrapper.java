@@ -90,6 +90,14 @@ public class MethodWrapper
         return methodNode.tryCatchBlocks;
     }
 
+    public boolean hasAnnotation(String search) {
+        if (methodNode.invisibleAnnotations != null)
+            for (String str : methodNode.invisibleAnnotations.stream().map(annotation -> annotation.desc).toList())
+                if (str.contains(search))
+                    return true;
+        return false;
+    }
+
     public int getMaxLocals()
     {
         return methodNode.maxLocals;

@@ -7,8 +7,14 @@ import java.util.function.Predicate;
  * @created 19.01.2022
  * @url https://github.com/HoverCatz
  **/
-public record VMPredicate(Predicate<Object> p) implements Predicate<Object>
+public class VMPredicate implements Predicate<Object>
 {
+
+    private final Predicate<Object> p;
+
+    public VMPredicate(Predicate<Object> p) {
+        this.p = p;
+    }
 
     @Override
     public boolean test(Object o)

@@ -55,6 +55,9 @@ public class Obzcure
                 if (outputFile.exists() && !outputFile.delete())
                     throw new RuntimeException("Output file already exists, and failed to delete it.");
 
+                if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs())
+                    throw new RuntimeException("Failed to create output directory.");
+
                 inputFile = Objects.requireNonNull(new File("TestJar/target/").listFiles(f -> f.getName().endsWith(".jar")))[0];
 //                inputFile = new File("C:\\Users\\" + System.getProperty("user.name") + "\\IdeaProjects\\ItzCounter\\build\\libs\\ItzCounter-1.0-SNAPSHOT.jar");
 

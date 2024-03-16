@@ -244,14 +244,14 @@ public final class ObzcureVM
                     Map<String, VMTryCatch> inside = new HashMap<>();
                     for (VMTryCatch vmTryCatch : tryCatch)
                         if (vmTryCatch.isWithin(pointer))
-                            if (vmTryCatch.type().isInstance(t))
-                                inside.put(vmTryCatch.start() + "." + vmTryCatch.end() + "." + vmTryCatch.handler(), vmTryCatch);
+                            if (vmTryCatch.type.isInstance(t))
+                                inside.put(vmTryCatch.start + "." + vmTryCatch.end + "." + vmTryCatch.handler, vmTryCatch);
                     if (!inside.isEmpty())
                     {
                         stack.clear();
                         stack.push(t);
                         if (inside.size() == 1)
-                            jump(inside.values().iterator().next().handler());
+                            jump(inside.values().iterator().next().handler);
                         else
                         {
                             int highestStart = 0;
@@ -277,7 +277,7 @@ public final class ObzcureVM
                                     lowestHandlerString = str;
                                 }
                             }
-                            jump(inside.get(lowestHandlerString).handler());
+                            jump(inside.get(lowestHandlerString).handler);
                         }
                         continue;
                     }
@@ -548,8 +548,8 @@ public final class ObzcureVM
             case Short s -> s;
             case Byte b -> b;
             case Boolean z -> z;
-            case VMType type -> new VMType(type.returnType(), type.argumentTypes());
-            case VMHandle handle -> new VMHandle(handle.tag(), handle.owner(), handle.name(), handle.returnType(), handle.argumentTypes());
+            case VMType type -> new VMType(type.returnType, type.argumentTypes);
+            case VMHandle handle -> new VMHandle(handle.tag, handle.owner, handle.name, handle.returnType, handle.argumentTypes);
             case Object[] objArray -> deepClone(null, objArray);
             case int[] a -> a.clone();
             default -> throw new IllegalStateException("Unexpected value: " + original);

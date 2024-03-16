@@ -202,13 +202,20 @@ public class ClassWrapper
     {
         MethodWrapper clinit = getOrCreateClinit();
         for (AbstractInsnNode insn : clinit.getInstructions())
-            if (insn instanceof LdcInsnNode ldc &&
-                    ldc.cst instanceof String str &&
-                    str.equals("/obzcure/cats.meow"))
+        {
+            if (insn instanceof LdcInsnNode)
             {
-                ldc.cst = obzcure.catsMeowFilename;
-                return;
+                LdcInsnNode ldc = (LdcInsnNode) insn;
+                if (ldc.cst instanceof String)
+                {
+                    if (ldc.cst.equals("/obzcure/cats.meow"))
+                    {
+                        ldc.cst = obzcure.catsMeowFilename;
+                        return;
+                    }
+                }
             }
+        }
     }
 
     public boolean isVMClass()
@@ -232,8 +239,8 @@ public class ClassWrapper
         node.methods.forEach(method ->
             method.instructions.forEach(insn ->
             {
-                if (insn instanceof LineNumberNode line)
-                    line.line = RandomUtils.getRandomInt(1, 9999);
+                if (insn instanceof LineNumberNode)
+                    ((LineNumberNode)insn).line = RandomUtils.getRandomInt(1, 9999);
             }));
     }
 

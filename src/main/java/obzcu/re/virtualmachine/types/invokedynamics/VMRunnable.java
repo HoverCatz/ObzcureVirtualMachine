@@ -5,8 +5,14 @@ package obzcu.re.virtualmachine.types.invokedynamics;
  * @created 16.01.2022
  * @url https://github.com/HoverCatz
  **/
-public record VMRunnable(Runnable r) implements Runnable
+public class VMRunnable implements Runnable
 {
+
+    private final Runnable r;
+
+    public VMRunnable(Runnable r) {
+        this.r = r;
+    }
 
     @Override
     public void run()
